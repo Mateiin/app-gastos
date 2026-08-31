@@ -12,7 +12,7 @@ export interface GastosFilters {
 
 @Injectable({ providedIn: 'root' })
 export class GastosService {
-  private readonly baseUrl = 'http://localhost:3000/gastos';
+  private readonly baseUrl = 'https://app-gastos-un8v.onrender.com/gastos';
 
   constructor(private readonly http: HttpClient) {}
 
