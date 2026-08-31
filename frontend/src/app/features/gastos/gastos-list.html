@@ -1,0 +1,30 @@
+<h2>Listado de gastos</h2>
+
+@if (cargando) {
+  <p class="vacio">Cargando…</p>
+} @else if (gastos.length === 0) {
+  <p class="vacio">No hay gastos registrados.</p>
+} @else {
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Descripción</th>
+        <th>Categoría</th>
+        <th>Método de pago</th>
+        <th class="monto">Monto</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (gasto of gastos; track gasto.id) {
+        <tr>
+          <td>{{ formatoFecha(gasto.fecha) }}</td>
+          <td>{{ gasto.descripcion }}</td>
+          <td>{{ gasto.categoria }}</td>
+          <td>{{ gasto.metodo_pago }}</td>
+          <td class="monto">{{ formatoNumero(gasto.monto) }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

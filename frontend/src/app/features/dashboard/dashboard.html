@@ -1,0 +1,54 @@
+<div class="dashboard">
+  <div class="balance">
+    <app-card title="Balance total">
+      <p class="total">
+        {{
+          resumen
+            ? formatoNumero(resumen.total)
+            : 'Cargando…'
+        }}
+      </p>
+    </app-card>
+  </div>
+
+  <app-card title="Gastos por categoría">
+    @if (resumen && resumen.por_categoria.length > 0) {
+      @for (item of resumen.por_categoria; track item.categoria) {
+        <div class="categoria">
+          <div class="categoria-label">
+            <span>{{ item.categoria }}</span>
+            <span>{{ formatoNumero(item.total) }}</span>
+          </div>
+          <div class="barra">
+            <div
+              class="barra-fill"
+              [style.width.%]="porcentajeCategoria(item.total)"
+            ></div>
+          </div>
+        </div>
+      }
+    } @else {
+      <p class="vacio">Sin gastos para mostrar.</p>
+    }
+  </app-card>
+
+  <app-card title="Histórico mensual">
+    @if (mensual.length > 0) {
+      <div class="mensual">
+        @for (item of mensual; track item.mes) {
+          <div class="mes" [title]="formatoNumero(item.total)">
+            <div class="mes-barra">
+              <div
+                class="mes-fill"
+                [style.height.%]="porcentajeMensual(item.total)"
+              ></div>
+            </div>
+            <span class="mes-label">{{ item.mes }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="vacio">Sin datos mensuales.</p>
+    }
+  </app-card>
+</div>
