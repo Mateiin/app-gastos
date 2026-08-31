@@ -90,17 +90,58 @@ PORT=3000
   Shortcut (`descripcion`, `fecha`, `monto`, `categoria`, `metodo_pago`)
   para no tener que rehacer esa parte.
 
+## Git / GitHub
+
+- Repo público: https://github.com/Mateiin/app-gastos
+- Rama por defecto: `main`. Git local configurado con usuario `Mateiin`
+  y email noreply `185133342+Mateiin@users.noreply.github.com`.
+- **IMPORTANTE**: `backend/.env` (con el `DATABASE_URL` real de Supabase,
+  incluye contraseña) NO se sube a GitHub (está en `.gitignore`).
+  Solo se versiona `backend/.env.example` como plantilla. Nunca commitear/envair el `.env`.
+
 ## Estado actual / próximos pasos
 
-1. [x] SQL de la tabla `gastos` listo en `backend/database/migrations/001_create_gastos.sql`
-   (falta: crear el proyecto en Supabase y ejecutar ese SQL)
-2. [x] Scaffolding del proyecto NestJS real (`nest new backend`) sobre esta carpeta
+1. [x] SQL de la tabla `gastos` listo y **ejecutado** en Supabase
+   (`backend/database/migrations/001_create_gastos.sql`). Verificado: tabla con
+   7 columnas + índices `gastos_pkey`, `idx_gastos_fecha`, `idx_gastos_categoria`.
+   El SQL es idempotente (`IF NOT EXISTS`) — correrlo varias veces es inofensivo.
+2. [x] Scaffolding del proyecto NestJS real sobre esta carpeta
 3. [x] Entity + módulo + endpoints de `gastos`
 4. [ ] Migrar el Shortcut de iOS para que apunte a la nueva API
-5. [x] Scaffolding del proyecto Angular (`ng new frontend`) sobre esta carpeta
+5. [x] Scaffolding del proyecto Angular
 6. [x] Dashboard: balance, gráfico por categoría, histórico mensual
-7. [ ] Deploy backend en Render, frontend en Vercel
+7. [~] Deploy backend en **Render** (en curso), frontend en **Vercel** (pendiente)
+
+## Trabajo verificado (funcionando contra Supabase real)
+
+- Conexión a la DB OK vía `DATABASE_URL` (pooler de Supabase, SSL).
+- Todos los endpoints del backend responden:
+  - `POST /gastos` crea y devuelve el gasto con `id` + `created_at` generados.
+  - `GET /gastos` lista (ordenado por fecha desc).
+  - `GET /gastos/resumen` → `{ total, por_categoria: [...] }`.
+  - `GET /gastos/resumen/mensual` → `[{ mes: 'YYYY-MM', total }]`.
+- Se probó end-to-end creando un gasto de prueba y limpiándolo después.
+
+## Configuración de deploy — Render (backend)
+
+Ya se arrancó la configuración en el dashboard de Render. Valores a completar:
+- **Repository**: `Mateiin/app-gastos`
+- **Root Directory**: `backend`  ← (el usuario ya lo configuró)
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npm run start:prod`
+- **Runtime**: Node
+- **Environment / Env vars**: definir `DATABASE_URL` = connection string real
+  de Supabase (el mismo de `backend/.env`). Render NO tiene el `.env` local,
+  así que hay que setearla manualmente en Render. También definir `PORT` si hiciera falta
+  (Render inyecta el suyo; el app usa `process.env.PORT ?? 3000`).
+
+Pendiente para la próxima sesión:
+- Terminar de configurar/desplegar el backend en Render y anotar la URL pública
+  (ej. `https://xxx.onrender.com`).
+- Sustituir `http://localhost:3000/gastos` por la URL de Render en
+  `frontend/src/app/core/services/gastos.service.ts` (línea `baseUrl`).
+- Deploy del frontend en Vercel (root `frontend`, build `npm run build`, output `dist/...`).
+- Migrar el Shortcut de iOS a la nueva URL de Render.
 
 Nota: el backend no arranca hasta tener `DATABASE_URL` válido en `backend/.env`.
-El frontend apunta a `http://localhost:3000/gastos` en `frontend/src/app/core/services/gastos.service.ts`
-(sustituir por la URL de Render en producción).
+En Render se apunta directamente a su variable de entorno (no usa `.env`).
