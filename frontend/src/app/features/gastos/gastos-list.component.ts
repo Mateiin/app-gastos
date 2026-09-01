@@ -8,7 +8,7 @@ import {
   TipoMovimiento,
 } from '../../core/models/gasto.model';
 
-const CATEGORIAS = [
+const CATEGORIAS_GASTO = [
   'Comida',
   'Transporte',
   'Casa',
@@ -16,6 +16,13 @@ const CATEGORIAS = [
   'Salud',
   'Compras',
   'Otro',
+];
+
+const CATEGORIAS_INGRESO = [
+  'Sueldo',
+  'Freelance',
+  'Inversiones',
+  'Otros',
 ];
 
 const METODOS = [
@@ -41,16 +48,16 @@ export class GastosListComponent implements OnInit {
   form = {
     descripcion: '',
     monto: null as number | null,
-    categoria: CATEGORIAS[0],
+    categoria: CATEGORIAS_GASTO[0],
     metodo_pago: METODOS[0],
     fecha: this.hoyISO(),
-    tipo: 'gasto' as TipoMovimiento,
   };
   guardando = false;
   mostrarForm = false;
   error = '';
 
-  protected readonly categorias = CATEGORIAS;
+  protected readonly categoriasGasto = CATEGORIAS_GASTO;
+  protected readonly categoriasIngreso = CATEGORIAS_INGRESO;
   protected readonly metodos = METODOS;
 
   constructor(
@@ -89,7 +96,7 @@ export class GastosListComponent implements OnInit {
 
   abrirForm(): void {
     this.mostrarForm = true;
-    this.form.tipo = this.tipo;
+    this.resetForm();
     this.cdr.markForCheck();
   }
 
@@ -112,7 +119,7 @@ export class GastosListComponent implements OnInit {
         categoria: this.form.categoria,
         metodo_pago: this.form.metodo_pago,
         fecha: this.form.fecha,
-        tipo: this.form.tipo,
+        tipo: this.tipo,
       })
       .subscribe({
         next: () => {
@@ -132,11 +139,9 @@ export class GastosListComponent implements OnInit {
   }
 
   formatoNumero(valor: number): string {
-    return valor.toLocaleString('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2,
-    });
+    const parts = valor.toFixed(2).split('.');
+    const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return `$${intPart},${parts[1]}`;
   }
 
   formatoFecha(fecha: string): string {
@@ -144,13 +149,13 @@ export class GastosListComponent implements OnInit {
   }
 
   private resetForm(): void {
+    const cats = this.tipo === 'ingreso' ? CATEGORIAS_INGRESO : CATEGORIAS_GASTO;
     this.form = {
       descripcion: '',
       monto: null,
-      categoria: CATEGORIAS[0],
+      categoria: cats[0],
       metodo_pago: METODOS[0],
       fecha: this.hoyISO(),
-      tipo: this.tipo,
     };
   }
 

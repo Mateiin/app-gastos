@@ -3,6 +3,36 @@
   min-height: 100vh;
 }
 
+/* Toggle button — always visible */
+.sidebar-toggle {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font-size: 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  box-shadow: var(--shadow-sm);
+
+  &:hover {
+    background: var(--muted);
+  }
+}
+
+/* Dark overlay behind sidebar on mobile */
+.sidebar-overlay {
+  display: none;
+}
+
 .sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -14,6 +44,9 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  transform: translateX(-100%);
+  transition: transform 0.25s ease;
+  z-index: 90;
 
   .sidebar-brand {
     display: flex;
@@ -88,6 +121,19 @@
   }
 }
 
+/* When sidebar is open, slide it in */
+.sidebar-open .sidebar {
+  transform: translateX(0);
+}
+
+.sidebar-open .sidebar-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 80;
+}
+
 .app-shell {
   flex: 1;
   display: flex;
@@ -100,6 +146,7 @@
   align-items: center;
   height: 4rem;
   padding: 0 1.5rem;
+  padding-left: 4rem;
   background: color-mix(in srgb, var(--card) 85%, transparent);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(6px);
@@ -118,22 +165,8 @@
 .app-main {
   flex: 1;
   padding: 1.5rem;
+  padding-top: 3.5rem;
   max-width: 1440px;
   width: 100%;
-}
-
-@media (max-width: 720px) {
-  .sidebar {
-    width: 68px;
-    .brand-name,
-    .nav-section {
-      display: none;
-    }
-    .sidebar-nav a {
-      justify-content: center;
-      .nav-icon {
-        width: auto;
-      }
-    }
-  }
+  overflow-x: auto;
 }

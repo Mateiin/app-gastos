@@ -11,19 +11,6 @@
 
   @if (mostrarForm) {
     <div class="card form-card">
-      <div class="seg">
-        <button
-          class="seg-item"
-          [class.active]="form.tipo === 'gasto'"
-          (click)="form.tipo = 'gasto'"
-        >Gasto</button>
-        <button
-          class="seg-item"
-          [class.active]="form.tipo === 'ingreso'"
-          (click)="form.tipo = 'ingreso'"
-        >Ingreso</button>
-      </div>
-
       <div class="form-grid">
         <label>
           <span>Descripción</span>
@@ -38,7 +25,7 @@
         <label>
           <span>Categoría</span>
           <select [(ngModel)]="form.categoria">
-            @for (c of categorias; track c) {
+            @for (c of (esIngresos ? categoriasIngreso : categoriasGasto); track c) {
               <option [value]="c">{{ c }}</option>
             }
           </select>

@@ -1,4 +1,12 @@
-<div class="app-layout">
+<div class="app-layout" [class.sidebar-open]="sidebarOpen">
+  <button class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="sidebarOpen ? 'Cerrar menú' : 'Abrir menú'">
+    {{ sidebarOpen ? '✕' : '☰' }}
+  </button>
+
+  @if (sidebarOpen) {
+    <div class="sidebar-overlay" (click)="toggleSidebar()"></div>
+  }
+
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
@@ -9,15 +17,15 @@
 
     <nav class="sidebar-nav">
       <span class="nav-section">Menú</span>
-      <a routerLink="/dashboard" routerLinkActive="active">
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="sidebarOpen = false">
         <span class="nav-icon" aria-hidden="true">▦</span>
         Resumen
       </a>
-      <a routerLink="/gastos" routerLinkActive="active">
+      <a routerLink="/gastos" routerLinkActive="active" (click)="sidebarOpen = false">
         <span class="nav-icon" aria-hidden="true">▬</span>
         Gastos
       </a>
-      <a routerLink="/ingresos" routerLinkActive="active">
+      <a routerLink="/ingresos" routerLinkActive="active" (click)="sidebarOpen = false">
         <span class="nav-icon" aria-hidden="true">▲</span>
         Ingresos
       </a>
