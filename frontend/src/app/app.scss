@@ -35,14 +35,14 @@
 
 .sidebar {
   width: 240px;
-  flex-shrink: 0;
   background: var(--sidebar);
   color: var(--sidebar-foreground);
   display: flex;
   flex-direction: column;
   padding: 1rem 0.75rem;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   height: 100vh;
   transform: translateX(-100%);
   transition: transform 0.25s ease;
