@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { GastosService } from '../../core/services/gastos.service';
@@ -11,6 +11,10 @@ import {
   Saldo,
 } from '../../core/models/gasto.model';
 import { Ahorro } from '../../core/models/ahorro.model';
+import {
+  proximaMetaTna,
+  formatoCuentaAtras,
+} from '../../core/utils/tna-countdown';
 
 @Component({
   selector: 'app-dashboard',
@@ -18,13 +22,16 @@ import { Ahorro } from '../../core/models/ahorro.model';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   saldo: Saldo | null = null;
   resumen: Resumen | null = null;
   mensual: ResumenMensual[] = [];
   movimientos: Gasto[] = [];
   ahorros: Ahorro[] = [];
   totalAhorros = 0;
+
+  now = Date.now();
+  private timer: ReturnType<typeof setInterval> | null = null;
 
   maxMensual = 1;
   maxCategoria = 1;
@@ -40,6 +47,14 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.timer = setInterval(() => {
+      this.now = Date.now();
+      this.cdr.markForCheck();
+    }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timer) clearInterval(this.timer);
   }
 
   cargar(): void {
@@ -85,7 +100,7 @@ export class DashboardComponent implements OnInit {
 
     this.gastosService.listar({ tipo: 'gasto', fecha_desde: hoy }).subscribe({
       next: (res) => {
-        this.gastosHoy = res.reduce((acc, g) => acc + g.monto, 0);
+        this.gastosHoy = res.reduce((acc, g) => acc + Number(g.monto), 0);
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Error cargando gastos de hoy', err),
@@ -114,13 +129,17 @@ export class DashboardComponent implements OnInit {
     return base + this.totalAhorros;
   }
 
-  avisoTnA(): boolean {
-    const treintaDias = 30 * 24 * 3600 * 1000;
-    const ahora = Date.now();
-    return this.ahorros.some((a) => {
-      if (!a.tna_actualizado) return false;
-      return ahora - new Date(a.tna_actualizado).getTime() > treintaDias;
-    });
+  restanteTna(): number {
+    if (this.ahorros.length === 0) return 0;
+    return Math.min(
+      ...this.ahorros.map((a) =>
+        a.tna_actualizado ? proximaMetaTna(a.tna_actualizado) : 0,
+      ),
+    );
+  }
+
+  cuentaTna(): string {
+    return formatoCuentaAtras(this.restanteTna());
   }
 
   topCategorias(): ResumenCategoria[] {

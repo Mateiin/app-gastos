@@ -105,8 +105,12 @@ Billeteras virtuales / cuentas remuneradas que crecen solas con interés.
 - Todo se compara en UTC (07:00 UTC = 04:00 AR fijo, Argentina no usa DST),
   así el interés no depende de la zona horaria del servidor.
 - El TNA NO se puede leer de Naranja X (no hay API pública): lo carga el
-  usuario (se registra en `tna_actualizado`). El dashboard muestra un aviso
-  si pasó +30 días desde la última actualización.
+  usuario (se registra en `tna_actualizado`). Hay un recordatorio con forma
+  de cuenta atrás semanal anclada al miércoles 23:59 hora Argentina
+  (`core/utils/tna-countdown.ts`): cuando llega a 0 se queda en 0 hasta que
+  se vuelve a actualizar el TNA (ahí recomienza hacia el próximo miércoles).
+  El dashboard muestra el countdown en un cuadrado constante y la página de
+  ahorros un chip por cuenta.
 
 ## Endpoints backend — ahorros
 
@@ -191,8 +195,8 @@ PORT=3000
    diario TNA/365 que se acredita según el hito de las 04:00 AR (07:00 UTC):
    el día de hoy suma recién pasadas las 4 AM, replicando a las billeteras
    virtuales (solo crece el saldo, no genera filas de movimientos). Dashboard:
-   KPI "Ahorros" + "Patrimonio total" (saldo + ahorros) + aviso si el TNA
-   lleva +30 días sin actualizarse (columna `tna_actualizado`, migración 004).
+   KPI "Ahorros" + "Patrimonio total" (saldo + ahorros) + cuenta atrás
+   constante del TNA (migración 004, `tna_actualizado`).
 
 ## Notas de deploy
 

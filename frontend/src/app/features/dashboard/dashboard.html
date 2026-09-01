@@ -50,12 +50,20 @@
     </article>
   </section>
 
-  @if (ahorros.length > 0 && avisoTnA()) {
-    <div class="aviso-tna">
-      <span class="aviso-icon" aria-hidden="true">◈</span>
-      <p>
-        Hace más de un mes que no actualizás el TNA de tus ahorros.
-        <a routerLink="/ahorros">Revisalo acá</a>.
+  @if (ahorros.length > 0) {
+    <div class="tna-timer" [class.vencido]="restanteTna() === 0">
+      <div class="tna-timer-head">
+        <span class="aviso-icon" aria-hidden="true">◈</span>
+        <span class="tna-timer-title">
+          {{ restanteTna() === 0 ? 'TNA vencido' : 'Actualizá tu TNA en' }}
+        </span>
+      </div>
+      <div class="tna-timer-val mono">
+        {{ restanteTna() === 0 ? '0' : cuentaTna() }}
+      </div>
+      <p class="tna-timer-hint">
+        Revisá la tasa en tu billetera y
+        <a routerLink="/ahorros">actualizala acá</a>.
       </p>
     </div>
   }

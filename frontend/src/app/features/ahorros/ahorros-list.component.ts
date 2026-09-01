@@ -2,11 +2,16 @@ import {
   ChangeDetectorRef,
   Component,
   OnInit,
+  OnDestroy,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { AhorrosService } from '../../core/services/ahorros.service';
 import { Ahorro } from '../../core/models/ahorro.model';
+import {
+  proximaMetaTna,
+  formatoCuentaAtras,
+} from '../../core/utils/tna-countdown';
 
 @Component({
   selector: 'app-ahorros-list',
@@ -14,9 +19,12 @@ import { Ahorro } from '../../core/models/ahorro.model';
   templateUrl: './ahorros-list.html',
   styleUrl: './ahorros-list.scss',
 })
-export class AhorrosListComponent implements OnInit {
+export class AhorrosListComponent implements OnInit, OnDestroy {
   ahorros: Ahorro[] = [];
   cargando = true;
+
+  now = Date.now();
+  private timer: ReturnType<typeof setInterval> | null = null;
 
   form = {
     nombre: '',
@@ -36,6 +44,14 @@ export class AhorrosListComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.timer = setInterval(() => {
+      this.now = Date.now();
+      this.cdr.markForCheck();
+    }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timer) clearInterval(this.timer);
   }
 
   cargar(): void {
@@ -161,9 +177,12 @@ export class AhorrosListComponent implements OnInit {
     });
   }
 
-  tnaViejo(a: Ahorro): boolean {
-    const f = a.tna_actualizado ? new Date(a.tna_actualizado).getTime() : 0;
-    return Date.now() - f > 30 * 24 * 3600 * 1000;
+  restanteTna(a: Ahorro): number {
+    return a.tna_actualizado ? proximaMetaTna(a.tna_actualizado) : 0;
+  }
+
+  cuentaTna(a: Ahorro): string {
+    return formatoCuentaAtras(this.restanteTna(a));
   }
 
   private resetForm(): void {

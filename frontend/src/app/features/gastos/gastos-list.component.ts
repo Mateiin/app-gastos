@@ -139,7 +139,8 @@ export class GastosListComponent implements OnInit {
   }
 
   formatoNumero(valor: number): string {
-    const parts = valor.toFixed(2).split('.');
+    const num = Number(valor);
+    const parts = num.toFixed(2).split('.');
     const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return `$${intPart},${parts[1]}`;
   }

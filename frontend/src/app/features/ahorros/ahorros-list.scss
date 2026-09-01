@@ -169,16 +169,27 @@
       gap: 0.5rem;
     }
 
-    .badge-tna {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 999px;
-      font-size: 0.68rem;
-      font-weight: 600;
-      color: var(--chart-3);
-      background: color-mix(in srgb, var(--chart-3) 14%, transparent);
-      border: 1px solid color-mix(in srgb, var(--chart-3) 35%, transparent);
-    }
+.countdown-chip {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--muted);
+  border: 1px solid var(--border);
+
+  &.vence {
+    color: var(--chart-3);
+    border-color: color-mix(in srgb, var(--chart-3) 35%, transparent);
+  }
+
+  &.vencido {
+    color: var(--destructive);
+    border-color: color-mix(in srgb, var(--destructive) 40%, transparent);
+    background: color-mix(in srgb, var(--destructive) 10%, transparent);
+  }
+}
 
     .ahorro-sub {
       margin: 0.15rem 0 0;
