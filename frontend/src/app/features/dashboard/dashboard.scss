@@ -93,6 +93,7 @@
 
   &.lg-2 {
     grid-template-columns: repeat(2, 1fr);
+    align-items: start;
   }
 }
 
