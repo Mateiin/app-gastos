@@ -40,7 +40,7 @@ export class DashboardComponent implements OnInit {
   }
 
   get maximaCategoria(): number {
-    const totales = this.resumen?.por_categoria.map((c) => c.total) ?? [];
+    const totales = this.resumen?.porCategoria.map((c) => c.total) ?? [];
     return totales.length > 0 ? Math.max(...totales) : 1;
   }
 

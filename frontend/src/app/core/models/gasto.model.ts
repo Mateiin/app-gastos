@@ -15,7 +15,7 @@ export interface ResumenCategoria {
 
 export interface Resumen {
   total: number;
-  por_categoria: ResumenCategoria[];
+  porCategoria: ResumenCategoria[];
 }
 
 export interface ResumenMensual {

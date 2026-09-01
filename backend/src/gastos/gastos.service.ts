@@ -81,7 +81,7 @@ export class GastosService {
 
     return {
       total: Number(total?.total ?? 0),
-      por_categoria: porCategoria.map((r) => ({
+      porCategoria: porCategoria.map((r) => ({
         categoria: r.categoria,
         total: Number(r.total),
       })),

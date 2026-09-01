@@ -12,8 +12,8 @@
   </div>
 
   <app-card title="Gastos por categoría">
-    @if (resumen && resumen.por_categoria.length > 0) {
-      @for (item of resumen.por_categoria; track item.categoria) {
+    @if (resumen && resumen.porCategoria.length > 0) {
+      @for (item of resumen.porCategoria; track item.categoria) {
         <div class="categoria">
           <div class="categoria-label">
             <span>{{ item.categoria }}</span>
