@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { GastosService } from '../../core/services/gastos.service';
 import { Gasto } from '../../core/models/gasto.model';
@@ -13,7 +13,10 @@ export class GastosListComponent implements OnInit {
   gastos: Gasto[] = [];
   cargando = true;
 
-  constructor(private readonly gastosService: GastosService) {}
+  constructor(
+    private readonly gastosService: GastosService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.cargar();
@@ -25,10 +28,12 @@ export class GastosListComponent implements OnInit {
       next: (res) => {
         this.gastos = res;
         this.cargando = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error cargando gastos', err);
         this.cargando = false;
+        this.cdr.markForCheck();
       },
     });
   }
