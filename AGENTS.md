@@ -4,47 +4,53 @@ Contexto para cualquier agente de código que trabaje en este repo.
 
 ## Qué es esto
 
-App personal de control de gastos. Reemplaza un flujo previo de
-"Shortcut de iOS → Google Apps Script → Google Sheets" (que ya funciona)
-por una arquitectura propia. El Shortcut se va a mantener del lado del
-usuario, pero apuntando a la nueva API en vez de a Apps Script.
+App personal de control de finanzas personales (ingresos y gastos). Reemplaza
+un flujo previo de "Shortcut de iOS → Google Apps Script → Google Sheets" (que
+ya funciona) por una arquitectura propia. El Shortcut se va a mantener del
+lado del usuario, pero apuntando a la nueva API en vez de a Apps Script.
+
+Además de gastos, ahora soporta **ingresos** y calcula un **saldo** (balance =
+ingresos − gastos). El modelo de datos usa una sola tabla `gastos` con una
+columna `tipo` (`'gasto' | 'ingreso'`) para ambos conceptos.
 
 ## Stack
 
 - **DB**: Supabase (Postgres gestionado en la nube, plan free)
 - **Backend**: NestJS + TypeORM, conectado a Supabase vía connection string
-- **Frontend**: Angular (dashboard visual: balance, gráficos por categoría,
-  totales por mes)
+- **Frontend**: Angular (dashboard visual: saldo, KPIs, gráficos por categoría,
+  histórico mensual, últimos movimientos). **Tema oscuro**.
 - **Deploy backend**: Render (Web Service free tier — duerme tras 15 min
   de inactividad, cold start ~20-30s al despertar; aceptable para este caso
-  de uso)
-- **Deploy frontend**: Vercel
+  de uso). URL pública: `https://app-gastos-un8v.onrender.com`
+- **Deploy frontend**: Vercel (root `frontend`, output `dist/app-gastos-frontend/browser`,
+  ver `frontend/vercel.json`)
 
 ## Estructura del repo
 
 ```
 app-gastos/
 ├── backend/                 # API NestJS
+│   ├── database/migrations/ # SQL ejecutado en Supabase (001, 002)
 │   └── src/
 │       ├── gastos/
-│       │   ├── entities/    # Entity de TypeORM: Gasto
+│       │   ├── entities/    # Entity de TypeORM: Gasto (incluye tipo)
 │       │   ├── dto/         # DTOs de creación/consulta
 │       │   ├── gastos.controller.ts
 │       │   ├── gastos.service.ts
 │       │   └── gastos.module.ts
-│       ├── config/          # Config de conexión a Supabase (env vars)
-│       ├── common/          # Pipes, filtros, interceptores compartidos
 │       ├── app.module.ts
-│       └── main.ts
-├── frontend/                 # Dashboard Angular
+│       └── main.ts          # enableCors + listen(process.env.PORT ?? 3000)
+├── frontend/                 # SPA Angular (tema oscuro)
+│   ├── vercel.json          # build/output de Vercel (dist/.../browser)
 │   └── src/app/
+│       ├── app.ts/html/scss # Shell: sidebar oscuro + topbar (estilo Athlos)
 │       ├── core/
-│       │   ├── services/    # Cliente HTTP hacia la API
-│       │   └── models/      # Interfaces TS (Gasto, ResumenMensual, etc.)
+│       │   ├── services/    # GastosService (baseUrl API de Render)
+│       │   └── models/      # Interfaces TS (Gasto, Resumen, Saldo, ...)
 │       ├── features/
-│       │   ├── dashboard/   # Vista principal: balance, gráficos
-│       │   └── gastos/      # Listado/detalle de gastos
-│       └── shared/          # Componentes reutilizables (cards, etc.)
+│       │   ├── dashboard/   # KPIs, gráficos, movimientos, saldo
+│       │   └── gastos/      # Listado + alta (sirve para /gastos y /ingresos)
+│       └── shared/          # Componentes reutilizables (card)
 └── AGENTS.md                 # este archivo
 ```
 
@@ -55,22 +61,33 @@ app-gastos/
 | id            | uuid (PK)            | generado por Postgres                   |
 | descripcion   | text                 |                                          |
 | fecha         | date                 | fecha real, no texto                    |
-| monto         | numeric(12,2)        |                                          |
+| monto         | numeric(12,2)        | siempre positivo (el signo lo da `tipo`)|
 | categoria     | text                 | Comida, Transporte, Casa, Entretenimiento, Salud, Compras, Otro |
 | metodo_pago   | text                 | Efectivo, Débito, Transferencia, etc.   |
+| tipo          | text                 | `'gasto'` (default) o `'ingreso'` (migración 002) |
 | created_at    | timestamptz          | default now()                           |
 
-Origen del listado de categorías/métodos: son los mismos que ya están
-cargados como opciones fijas en el Shortcut de iOS existente — mantener
-los mismos valores para no romper la migración de datos históricos.
+- Saldo = SUM(ingresos) − SUM(gastos). El cálculo siempre vive en el backend.
+- Origen del listado de categorías/métodos: son los mismos que ya están
+  cargados como opciones fijas en el Shortcut de iOS existente — mantener
+  los mismos valores para no romper la migración de datos históricos.
+  El formulario del frontend usa `CATEGORIAS`/`METODOS` hardcodeados en
+  `gastos-list.component.ts`.
 
-## Endpoints planeados
+## Endpoints backend
 
-- `POST /gastos` — crea un gasto (usado por el Shortcut de iOS)
-- `GET /gastos` — lista gastos (con filtros opcionales por rango de fecha/categoría)
-- `GET /gastos/resumen` — total general + total por categoría
-- `GET /gastos/resumen/mensual` — histórico de totales agrupados por año/mes
-  (equivalente al QUERY que se usaba en la hoja de Google Sheets)
+- `POST /gastos` — crea un movimiento. Body: `descripcion, fecha, monto,
+  categoria, metodo_pago, tipo?`. `tipo` es opcional (default `'gasto'`), así
+  el Shortcut de iOS sigue funcionando sin cambios. Usado por el Shortcut.
+- `GET /gastos` — lista movimientos (filtros opcionales: `fecha_desde`,
+  `fecha_hasta`, `categoria`, `tipo`). Ordenado por fecha desc.
+- `GET /gastos/resumen` — `{ total, porCategoria: [{categoria, total}] }`.
+  **Solo gastos** (`tipo='gasto'`) y `porCategoria` en **camelCase**.
+- `GET /gastos/saldo` — `{ saldo, ingresos, gastos }` (acumulado de todo).
+- `GET /gastos/resumen/mensual` — serie por mes:
+  `[{ mes: 'YYYY-MM', total, ingresos, gastos }]`, ordenada asc por mes.
+
+Respuestas en camelCase (ej. `porCategoria`). No mezclar snake_case.
 
 ## Variables de entorno (backend)
 
@@ -84,11 +101,22 @@ PORT=3000
 - Seguir el mismo estilo que el proyecto Dimundo (NestJS + Angular +
   Postgres) del mismo autor: TypeORM para el ORM, DTOs con
   class-validator, módulos por dominio.
-- El backend es la única fuente de verdad para los cálculos de resumen
+- El backend es la única fuente de verdad para los cálculos de resumen/saldo
   (no replicar lógica de agregación en el frontend).
 - Mantener compatibilidad de nombres de campo con lo que ya manda el
-  Shortcut (`descripcion`, `fecha`, `monto`, `categoria`, `metodo_pago`)
-  para no tener que rehacer esa parte.
+  Shortcut (`descripcion`, `fecha`, `monto`, `categoria`, `metodo_pago`).
+- Respuestas del API en camelCase.
+- **Frontend es Angular zoneless** (sin zone.js): todo `subscribe()` que
+  asigne estado a una propiedad de clase debe llamar `this.cdr.markForCheck()`
+  (inyectar `ChangeDetectorRef` en el constructor). Ya aplicado en
+  `dashboard.component.ts` y `gastos-list.component.ts`. No olvidarlo en
+  componentes nuevos.
+- Tema oscuro: todas las variables de color viven en `src/styles.scss`
+  (`:root`). Usar esas variables CSS (o `color-mix`) en vez de colores
+  hardcodeados.
+- Formato de montos: `formatoNumero()` en cada componente genera
+  `$1.234,56` (miles con `.`, decimales con `,`). No usar `toLocaleString`
+  de currency (daba resultados inconsistentes).
 
 ## Git / GitHub
 
@@ -97,51 +125,35 @@ PORT=3000
   y email noreply `185133342+Mateiin@users.noreply.github.com`.
 - **IMPORTANTE**: `backend/.env` (con el `DATABASE_URL` real de Supabase,
   incluye contraseña) NO se sube a GitHub (está en `.gitignore`).
-  Solo se versiona `backend/.env.example` como plantilla. Nunca commitear/envair el `.env`.
+  Solo se versiona `backend/.env.example` como plantilla. Nunca commitear/enviar el `.env`.
 
 ## Estado actual / próximos pasos
 
-1. [x] SQL de la tabla `gastos` listo y **ejecutado** en Supabase
-   (`backend/database/migrations/001_create_gastos.sql`). Verificado: tabla con
-   7 columnas + índices `gastos_pkey`, `idx_gastos_fecha`, `idx_gastos_categoria`.
-   El SQL es idempotente (`IF NOT EXISTS`) — correrlo varias veces es inofensivo.
-2. [x] Scaffolding del proyecto NestJS real sobre esta carpeta
-3. [x] Entity + módulo + endpoints de `gastos`
-4. [ ] Migrar el Shortcut de iOS para que apunte a la nueva API
-5. [x] Scaffolding del proyecto Angular
-6. [x] Dashboard: balance, gráfico por categoría, histórico mensual
-7. [~] Deploy backend en **Render** (en curso), frontend en **Vercel** (pendiente)
+1. [x] Tabla `gastos` creada en Supabase (migración `001_create_gastos.sql`).
+2. [x] Scaffolding NestJS + entity + endpoints base.
+3. [x] Ingresos + saldo: columna `tipo` (migración `002_add_tipo.sql`,
+   **ya ejecutada en Supabase**) + endpoint `GET /gastos/saldo`.
+4. [x] Dashboard profesional estilo Athlos/Seminario Integrador (tema oscuro,
+   KPIs, evolución mensual, gastos por categoría, últimos movimientos, saldo).
+5. [x] Páginas Gastos e Ingresos (`/gastos` y `/ingresos`) con alta de
+   movimientos y filtro por tipo.
+6. [x] Frontend deployado en Vercel, backend en Render
+   (`https://app-gastos-un8v.onrender.com`), `baseUrl` ya apunta a Render.
+7. [~] Migrar el Shortcut de iOS para que apunte a la nueva API de Render.
+8. [ ] Correcciones pendientes de la sesión del 2026-09-01 (el usuario dijo
+   que hay "unas correcciones más" para mañana — retomarlas al inicio).
 
-## Trabajo verificado (funcionando contra Supabase real)
+## Notas de deploy
 
-- Conexión a la DB OK vía `DATABASE_URL` (pooler de Supabase, SSL).
-- Todos los endpoints del backend responden:
-  - `POST /gastos` crea y devuelve el gasto con `id` + `created_at` generados.
-  - `GET /gastos` lista (ordenado por fecha desc).
-  - `GET /gastos/resumen` → `{ total, por_categoria: [...] }`.
-  - `GET /gastos/resumen/mensual` → `[{ mes: 'YYYY-MM', total }]`.
-- Se probó end-to-end creando un gasto de prueba y limpiándolo después.
-
-## Configuración de deploy — Render (backend)
-
-Ya se arrancó la configuración en el dashboard de Render. Valores a completar:
-- **Repository**: `Mateiin/app-gastos`
-- **Root Directory**: `backend`  ← (el usuario ya lo configuró)
-- **Build Command**: `npm install && npm run build`
-- **Start Command**: `npm run start:prod`
-- **Runtime**: Node
-- **Environment / Env vars**: definir `DATABASE_URL` = connection string real
-  de Supabase (el mismo de `backend/.env`). Render NO tiene el `.env` local,
-  así que hay que setearla manualmente en Render. También definir `PORT` si hiciera falta
-  (Render inyecta el suyo; el app usa `process.env.PORT ?? 3000`).
-
-Pendiente para la próxima sesión:
-- Terminar de configurar/desplegar el backend en Render y anotar la URL pública
-  (ej. `https://xxx.onrender.com`).
-- Sustituir `http://localhost:3000/gastos` por la URL de Render en
-  `frontend/src/app/core/services/gastos.service.ts` (línea `baseUrl`).
-- Deploy del frontend en Vercel (root `frontend`, build `npm run build`, output `dist/...`).
-- Migrar el Shortcut de iOS a la nueva URL de Render.
-
-Nota: el backend no arranca hasta tener `DATABASE_URL` válido en `backend/.env`.
-En Render se apunta directamente a su variable de entorno (no usa `.env`).
+- Backend (Render): Root Directory `backend`, Build `npm install && npm run
+  build`, Start `npm run start:prod`, runtime Node, env `DATABASE_URL` (real,
+  la misma de `backend/.env`). Render no tiene el `.env` local: hay que
+  setearlo manualmente en su dashboard. `PORT` lo inyecta Render
+  (`process.env.PORT ?? 3000`).
+- Frontend (Vercel): root `frontend`, build `npm run build`, output
+  `dist/app-gastos-frontend/browser` (ver `frontend/vercel.json`). Angular 17+
+  con builder `@angular/build:application` meté los bundles en `/browser`.
+- CORS está abierto (`app.enableCors()` sin parámetros) en `main.ts`. Más
+  adelante restringirlo solo al dominio de Vercel por seguridad.
+- `angular.json`: budget `anyComponentStyle` subido a 8kB/16kB porque el
+  dashboard SCSS es rico. Verificar que nuevas páginas no superen el warning.
