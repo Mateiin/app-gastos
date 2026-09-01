@@ -164,6 +164,20 @@
       margin: 0;
       font-weight: 600;
       font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .badge-tna {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--chart-3);
+      background: color-mix(in srgb, var(--chart-3) 14%, transparent);
+      border: 1px solid color-mix(in srgb, var(--chart-3) 35%, transparent);
     }
 
     .ahorro-sub {

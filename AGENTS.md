@@ -30,7 +30,7 @@ columna `tipo` (`'gasto' | 'ingreso'`) para ambos conceptos.
 ```
 app-gastos/
 ├── backend/                 # API NestJS
-│   ├── database/migrations/ # SQL ejecutado en Supabase (001, 002, 003)
+│   ├── database/migrations/ # SQL ejecutado en Supabase (001, 002, 003, 004)
 │   └── src/
 │       ├── gastos/
 │       │   ├── entities/    # Entity de TypeORM: Gasto (incluye tipo)
@@ -92,17 +92,21 @@ Billeteras virtuales / cuentas remuneradas que crecen solas con interés.
 | saldo                 | numeric(12,2)  | saldo actual (crece con interés)        |
 | tna                   | numeric(5,2)   | tasa nominal anual en % (ej 40.5)       |
 | fecha_ultimo_interes  | timestamptz    | se actualiza al capitalizar             |
+| tna_actualizado       | timestamptz    | última vez que el usuario editó el TNA  |
 | created_at            | timestamptz    | default now()                           |
 
 - El interés se calcula siempre en el backend: compuesto diario
-  `saldo × (TNA/100/365)`, acumulado por día transcurrido desde
-  `fecha_ultimo_interes`. Se capitaliza (persiste) al consultar
-  `GET /ahorros` o `GET /ahorros/total`. Solo crece el saldo: NO genera
-  filas en la tabla `gastos`.
-- `fecha_ultimo_interes` se guarda en UTC y los días se cuentan por diferencia
-  de fechas UTC, así el interés no depende de la zona horaria del servidor.
+  `saldo × (TNA/100/365)`. Se acredita por cada "hito de las 04:00 hora
+  Argentina" (07:00 UTC) transcurrido desde `fecha_ultimo_interes`:
+  replicar cómo las billeteras virtuales te pagan el interés a la madrugada
+  (antes de las 4 AM el día de hoy aún no cuenta). Se capitaliza (persiste)
+  al consultar `GET /ahorros` o `GET /ahorros/total`. Solo crece el saldo:
+  NO genera filas en la tabla `gastos`.
+- Todo se compara en UTC (07:00 UTC = 04:00 AR fijo, Argentina no usa DST),
+  así el interés no depende de la zona horaria del servidor.
 - El TNA NO se puede leer de Naranja X (no hay API pública): lo carga el
-  usuario y lo actualiza manualmente cuando cambia.
+  usuario (se registra en `tna_actualizado`). El dashboard muestra un aviso
+  si pasó +30 días desde la última actualización.
 
 ## Endpoints backend — ahorros
 
@@ -184,9 +188,11 @@ PORT=3000
 7. [~] Migrar el Shortcut de iOS para que apunte a la nueva API de Render.
 8. [x] Ahorros: módulo backend + tabla `ahorros` (migración 003) + página
    `/ahorros` en frontend (alta, editar TNA/saldo, borrar). Interés compuesto
-   diario TNA/365 que se acredita al consultar (solo crece el saldo, no genera
-   filas de movimientos). Dashboard: KPI "Ahorros" + "Patrimonio total"
-   (saldo + ahorros).
+   diario TNA/365 que se acredita según el hito de las 04:00 AR (07:00 UTC):
+   el día de hoy suma recién pasadas las 4 AM, replicando a las billeteras
+   virtuales (solo crece el saldo, no genera filas de movimientos). Dashboard:
+   KPI "Ahorros" + "Patrimonio total" (saldo + ahorros) + aviso si el TNA
+   lleva +30 días sin actualizarse (columna `tna_actualizado`, migración 004).
 
 ## Notas de deploy
 

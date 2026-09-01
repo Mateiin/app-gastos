@@ -25,6 +25,9 @@ export class Ahorro {
   @Column('timestamptz')
   fecha_ultimo_interes: Date;
 
+  @Column('timestamptz', { nullable: true })
+  tna_actualizado: Date | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }

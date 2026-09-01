@@ -90,6 +90,38 @@
   }
 }
 
+/* ---- TNA reminder ---- */
+.aviso-tna {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--chart-3) 35%, transparent);
+  background: color-mix(in srgb, var(--chart-3) 10%, transparent);
+
+  .aviso-icon {
+    color: var(--chart-3);
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--foreground);
+  }
+
+  a {
+    color: var(--primary-strong);
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 /* ---- Grid + panels ---- */
 .grid {
   display: grid;

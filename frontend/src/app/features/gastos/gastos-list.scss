@@ -172,7 +172,43 @@
     grid-template-columns: 1fr;
   }
 
+  /* Convertir la tabla en tarjetas apiladas (se ve completa, sin scroll) */
   .tabla {
-    min-width: 540px;
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: block;
+    }
+
+    tr {
+      display: block;
+      padding: 0.85rem 0;
+      border-bottom: 1px solid var(--border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+
+    td {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.25rem 0;
+      border-bottom: none;
+      text-align: right;
+
+      &::before {
+        content: attr(data-label);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted-foreground);
+        flex-shrink: 0;
+      }
+    }
   }
 }

@@ -78,11 +78,11 @@
         <tbody>
           @for (gasto of gastos; track gasto.id) {
             <tr>
-              <td>{{ formatoFecha(gasto.fecha) }}</td>
-              <td>{{ gasto.descripcion }}</td>
-              <td>{{ gasto.categoria }}</td>
-              <td>{{ gasto.metodo_pago }}</td>
-              <td class="monto">
+              <td data-label="Fecha">{{ formatoFecha(gasto.fecha) }}</td>
+              <td data-label="Descripción">{{ gasto.descripcion }}</td>
+              <td data-label="Categoría">{{ gasto.categoria }}</td>
+              <td data-label="Método">{{ gasto.metodo_pago }}</td>
+              <td data-label="Monto" class="monto">
                 <span class="monto-val" [class.positivo]="gasto.tipo === 'ingreso'">
                   {{ gasto.tipo === 'ingreso' ? '+' : '−' }}{{ formatoNumero(gasto.monto) }}
                 </span>

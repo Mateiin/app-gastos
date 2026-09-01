@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { GastosService } from '../../core/services/gastos.service';
 import { AhorrosService } from '../../core/services/ahorros.service';
@@ -9,10 +10,11 @@ import {
   ResumenMensual,
   Saldo,
 } from '../../core/models/gasto.model';
+import { Ahorro } from '../../core/models/ahorro.model';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
@@ -21,6 +23,7 @@ export class DashboardComponent implements OnInit {
   resumen: Resumen | null = null;
   mensual: ResumenMensual[] = [];
   movimientos: Gasto[] = [];
+  ahorros: Ahorro[] = [];
   totalAhorros = 0;
 
   maxMensual = 1;
@@ -96,9 +99,10 @@ export class DashboardComponent implements OnInit {
       error: (err) => console.error('Error cargando movimientos', err),
     });
 
-    this.ahorrosService.total().subscribe({
+    this.ahorrosService.listar().subscribe({
       next: (res) => {
-        this.totalAhorros = res.total;
+        this.ahorros = res;
+        this.totalAhorros = res.reduce((acc, a) => acc + (Number(a.saldo) || 0), 0);
         this.cdr.markForCheck();
       },
       error: (err) => console.error('Error cargando ahorros', err),
@@ -108,6 +112,15 @@ export class DashboardComponent implements OnInit {
   saldoTotal(): number {
     const base = this.saldo?.saldo ?? 0;
     return base + this.totalAhorros;
+  }
+
+  avisoTnA(): boolean {
+    const treintaDias = 30 * 24 * 3600 * 1000;
+    const ahora = Date.now();
+    return this.ahorros.some((a) => {
+      if (!a.tna_actualizado) return false;
+      return ahora - new Date(a.tna_actualizado).getTime() > treintaDias;
+    });
   }
 
   topCategorias(): ResumenCategoria[] {

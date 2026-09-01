@@ -19,12 +19,14 @@ export class AhorrosService {
   ) {}
 
   create(dto: CreateAhorroDto): Promise<Ahorro> {
+    const ahora = new Date();
     const ahorro = this.ahorrosRepo.create({
       nombre: dto.nombre,
       monto_inicial: dto.monto_inicial,
       saldo: dto.monto_inicial,
       tna: dto.tna,
-      fecha_ultimo_interes: new Date(),
+      fecha_ultimo_interes: ahora,
+      tna_actualizado: ahora,
     });
     return this.ahorrosRepo.save(ahorro);
   }
@@ -36,7 +38,7 @@ export class AhorrosService {
 
     const modificados: Ahorro[] = [];
     const resultado = ahorros.map((a) => {
-      const dias = this.diasTranscurridos(a.fecha_ultimo_interes);
+      const dias = this.hitos4Am(a.fecha_ultimo_interes);
       const conInteres = this.acreditarIntereses(a);
       if (dias > 0) modificados.push(conInteres);
       return {
@@ -55,7 +57,7 @@ export class AhorrosService {
     const modificados: Ahorro[] = [];
     let total = 0;
     for (const a of ahorros) {
-      const dias = this.diasTranscurridos(a.fecha_ultimo_interes);
+      const dias = this.hitos4Am(a.fecha_ultimo_interes);
       const conInteres = this.acreditarIntereses(a);
       if (dias > 0) modificados.push(conInteres);
       total += conInteres.saldo;
@@ -73,7 +75,10 @@ export class AhorrosService {
     this.acreditarIntereses(ahorro);
 
     if (dto.nombre !== undefined) ahorro.nombre = dto.nombre;
-    if (dto.tna !== undefined) ahorro.tna = dto.tna;
+    if (dto.tna !== undefined) {
+      ahorro.tna = dto.tna;
+      ahorro.tna_actualizado = new Date();
+    }
     if (dto.saldo !== undefined) ahorro.saldo = dto.saldo;
 
     return this.ahorrosRepo.save(ahorro);
@@ -90,7 +95,7 @@ export class AhorrosService {
   /* ---- Interés compuesto diario ---- */
 
   private acreditarIntereses(ahorro: Ahorro): Ahorro {
-    const dias = this.diasTranscurridos(ahorro.fecha_ultimo_interes);
+    const dias = this.hitos4Am(ahorro.fecha_ultimo_interes);
     if (dias <= 0) return ahorro;
 
     const tasa = this.tasaDiaria(ahorro.tna);
@@ -105,14 +110,35 @@ export class AhorrosService {
     return ahorro;
   }
 
-  private diasTranscurridos(fecha: Date): number {
+  /**
+   * Cuenta cuántas veces ha pasado el hito de las 04:00 hora Argentina
+   * (07:00 UTC, ya que Argentina es UTC-3) desde la última capitalización.
+   * Replica cómo las billeteras virtuales acreditan el interés a la madrugada.
+   */
+  private hitos4Am(fecha: Date): number {
+    const HITO_UTC_HORA = 7; // 04:00 AR = 07:00 UTC
+
     const ultimo = new Date(fecha);
-    const ahora = new Date();
-    const inicio =
-      Date.UTC(ultimo.getUTCFullYear(), ultimo.getUTCMonth(), ultimo.getUTCDate());
-    const fin =
-      Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate());
-    return Math.floor((fin - inicio) / UN_DIA_MS);
+    let ahora = new Date();
+
+    // Normalizar al "hito" más reciente anterior a cada instante.
+    const hitoAnteriorOIgual = (d: Date): Date => {
+      const base = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+      const horaUtc = d.getUTCHours();
+      // Si la hora actual UTC ya pasó (o es) 07:00, el hito del día ya pasó.
+      // Tomamos la fecha del día actual a las 07:00 UTC.
+      if (horaUtc >= HITO_UTC_HORA) {
+        return new Date(base + HITO_UTC_HORA * 3600_000);
+      }
+      // Si no pasó, el último hito fue ayer a las 07:00 UTC.
+      return new Date(base - 24 * 3600_000 + HITO_UTC_HORA * 3600_000);
+    };
+
+    const hitoFin = hitoAnteriorOIgual(ahora).getTime();
+    const hitoInicio = hitoAnteriorOIgual(ultimo).getTime();
+
+    const dias = (hitoFin - hitoInicio) / UN_DIA_MS;
+    return Math.max(0, Math.floor(dias));
   }
 
   private tasaDiaria(tna: number): number {

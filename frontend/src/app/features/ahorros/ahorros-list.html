@@ -92,10 +92,16 @@
         @for (a of ahorros; track a.id) {
           <li class="ahorro-item">
             <div class="ahorro-info">
-              <p class="ahorro-nombre">{{ a.nombre }}</p>
+              <p class="ahorro-nombre">
+                {{ a.nombre }}
+                @if (tnaViejo(a)) {
+                  <span class="badge-tna" [title]="'TNA actualizado ' + formatoFecha(a.tna_actualizado)">Revisar TNA</span>
+                }
+              </p>
               <p class="ahorro-sub">
                 Inversión inicial {{ formatoNumero(a.monto_inicial) }} ·
-                TNA {{ a.tna }}%
+                TNA {{ a.tna }}% ·
+                TNA actualizado {{ formatoFecha(a.tna_actualizado) }}
               </p>
             </div>
 

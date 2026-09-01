@@ -152,6 +152,20 @@ export class AhorrosListComponent implements OnInit {
     return `$${intPart},${parts[1]}`;
   }
 
+  formatoFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '—';
+    return new Date(fecha).toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  tnaViejo(a: Ahorro): boolean {
+    const f = a.tna_actualizado ? new Date(a.tna_actualizado).getTime() : 0;
+    return Date.now() - f > 30 * 24 * 3600 * 1000;
+  }
+
   private resetForm(): void {
     this.form = {
       nombre: '',

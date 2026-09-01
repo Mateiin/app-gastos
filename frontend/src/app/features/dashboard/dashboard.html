@@ -50,6 +50,16 @@
     </article>
   </section>
 
+  @if (ahorros.length > 0 && avisoTnA()) {
+    <div class="aviso-tna">
+      <span class="aviso-icon" aria-hidden="true">◈</span>
+      <p>
+        Hace más de un mes que no actualizás el TNA de tus ahorros.
+        <a routerLink="/ahorros">Revisalo acá</a>.
+      </p>
+    </div>
+  }
+
   <section class="grid lg-2">
     <article class="panel">
       <header class="panel-header">

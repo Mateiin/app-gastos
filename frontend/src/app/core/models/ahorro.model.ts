@@ -5,6 +5,7 @@ export interface Ahorro {
   saldo: number;
   tna: number;
   fecha_ultimo_interes: string;
+  tna_actualizado?: string | null;
   interes_diario: number;
   created_at?: string;
 }
