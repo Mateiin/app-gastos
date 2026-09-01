@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { GastosService } from '../../core/services/gastos.service';
 import { Resumen, ResumenMensual } from '../../core/models/gasto.model';
@@ -15,7 +15,10 @@ export class DashboardComponent implements OnInit {
   mensual: ResumenMensual[] = [];
   maxMensual = 1;
 
-  constructor(private readonly gastosService: GastosService) {}
+  constructor(
+    private readonly gastosService: GastosService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.cargar();
@@ -25,6 +28,7 @@ export class DashboardComponent implements OnInit {
     this.gastosService.resumen().subscribe({
       next: (res) => {
         this.resumen = res;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error cargando resumen', err),
     });
@@ -34,6 +38,7 @@ export class DashboardComponent implements OnInit {
         this.mensual = res;
         this.maxMensual =
           res.length > 0 ? Math.max(...res.map((r) => r.total)) : 1;
+        this.cdr.markForCheck();
       },
       error: (err) => console.error('Error cargando resumen mensual', err),
     });
