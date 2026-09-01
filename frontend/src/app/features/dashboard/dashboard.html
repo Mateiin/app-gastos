@@ -1,54 +1,166 @@
 <div class="dashboard">
-  <div class="balance">
-    <app-card title="Balance total">
-      <p class="total">
-        {{
-          resumen
-            ? formatoNumero(resumen.total)
-            : 'Cargando…'
-        }}
-      </p>
-    </app-card>
-  </div>
+  <section class="kpi-grid">
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Saldo actual</span>
+        <span class="stat-icon icon-saldo">$</span>
+      </div>
+      <div class="stat-value mono" [class.positivo]="saldo && esPositivo(saldo.saldo)">
+        {{ saldo ? formatoNumero(saldo.saldo) : '—' }}
+      </div>
+      <span class="stat-hint">
+        {{ saldo ? 'Ingresos − Gastos acumulados' : 'Cargando…' }}
+      </span>
+    </article>
 
-  <app-card title="Gastos por categoría">
-    @if (resumen && resumen.porCategoria.length > 0) {
-      @for (item of resumen.porCategoria; track item.categoria) {
-        <div class="categoria">
-          <div class="categoria-label">
-            <span>{{ item.categoria }}</span>
-            <span>{{ formatoNumero(item.total) }}</span>
-          </div>
-          <div class="barra">
-            <div
-              class="barra-fill"
-              [style.width.%]="porcentajeCategoria(item.total)"
-            ></div>
-          </div>
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Ingresos del mes</span>
+        <span class="stat-icon icon-ingreso">↑</span>
+      </div>
+      <div class="stat-value mono positivo">{{ ingresosMes ? formatoNumero(ingresosMes) : (mensual.length ? formatoNumero(mensual[mensual.length-1].ingresos) : '—') }}</div>
+      <span class="stat-hint">Total recibido este mes</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Gastos del mes</span>
+        <span class="stat-icon icon-gasto">↓</span>
+      </div>
+      <div class="stat-value mono negativo">{{ gastosMes ? formatoNumero(gastosMes) : (mensual.length ? formatoNumero(mensual[mensual.length-1].gastos) : '—') }}</div>
+      <span class="stat-hint">Total gastado este mes</span>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Gastos de hoy</span>
+        <span class="stat-icon icon-hoy">◷</span>
+      </div>
+      <div class="stat-value mono">{{ gastosHoy ? formatoNumero(gastosHoy) : '—' }}</div>
+      <span class="stat-hint">Acumulado del día</span>
+    </article>
+  </section>
+
+  <section class="grid lg-2">
+    <article class="panel">
+      <header class="panel-header">
+        <div class="panel-heading">
+          <h2>Evolución mensual</h2>
+          <p>Ingresos vs. gastos por mes</p>
         </div>
-      }
-    } @else {
-      <p class="vacio">Sin gastos para mostrar.</p>
-    }
-  </app-card>
-
-  <app-card title="Histórico mensual">
-    @if (mensual.length > 0) {
-      <div class="mensual">
-        @for (item of mensual; track item.mes) {
-          <div class="mes" [title]="formatoNumero(item.total)">
-            <div class="mes-barra">
-              <div
-                class="mes-fill"
-                [style.height.%]="porcentajeMensual(item.total)"
-              ></div>
-            </div>
-            <span class="mes-label">{{ item.mes }}</span>
+      </header>
+      <div class="panel-body">
+        @if (mensual.length === 0) {
+          <p class="vacio">Sin datos mensuales.</p>
+        } @else {
+          <div class="chart-mensual">
+            @for (m of mensual; track m.mes) {
+              <div class="col-mes" [title]="m.mes + ': ingresos ' + formatoNumero(m.ingresos) + ', gastos ' + formatoNumero(m.gastos)">
+                <div class="barras">
+                  <div class="bar-ingreso" [style.height.%]="porcentajeMensual(m.ingresos)"></div>
+                  <div class="bar-gasto" [style.height.%]="porcentajeMensual(m.gastos)"></div>
+                </div>
+                <span class="mes-label">{{ mesCorto(m.mes) }}</span>
+              </div>
+            }
+          </div>
+          <div class="leyenda">
+            <span><i class="dot dot-ingreso"></i>Ingresos</span>
+            <span><i class="dot dot-gasto"></i>Gastos</span>
           </div>
         }
       </div>
-    } @else {
-      <p class="vacio">Sin datos mensuales.</p>
-    }
-  </app-card>
+    </article>
+
+    <article class="panel">
+      <header class="panel-header">
+        <div class="panel-heading">
+          <h2>Gastos por categoría</h2>
+          <p>Distribución del gasto</p>
+        </div>
+      </header>
+      <div class="panel-body">
+        @if (resumen && resumen.porCategoria.length > 0) {
+          @for (item of topCategorias(); track item.categoria) {
+            <div class="cat-row">
+              <div class="cat-label">
+                <span>{{ item.categoria }}</span>
+                <span class="mono">{{ formatoNumero(item.total) }}</span>
+              </div>
+              <div class="barra">
+                <div class="barra-fill" [style.width.%]="porcentajeCategoria(item.total)"></div>
+              </div>
+            </div>
+          }
+        } @else {
+          <p class="vacio">Sin gastos para mostrar.</p>
+        }
+      </div>
+    </article>
+  </section>
+
+  <section class="grid lg-2">
+    <article class="panel">
+      <header class="panel-header">
+        <div class="panel-heading">
+          <h2>Últimos movimientos</h2>
+          <p>Actividad reciente</p>
+        </div>
+      </header>
+      <div class="panel-body list-flush">
+        @if (movimientos.length === 0) {
+          <p class="vacio">Sin movimientos.</p>
+        } @else {
+          <ul class="mov-list">
+            @for (m of movimientos; track m.id) {
+              <li>
+                <span class="tipo-badge" [class.ingreso]="m.tipo === 'ingreso'">
+                  {{ m.tipo === 'ingreso' ? '▲' : '▼' }}
+                </span>
+                <div class="mov-info">
+                  <p class="mov-desc">{{ m.descripcion }}</p>
+                  <p class="mov-sub">{{ formatoFecha(m.fecha) }} · {{ m.categoria }}</p>
+                </div>
+                <span class="mov-monto mono" [class.positivo]="m.tipo === 'ingreso'">
+                  {{ m.tipo === 'ingreso' ? '+' : '−' }}{{ formatoNumero(m.monto) }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </article>
+
+    <article class="panel">
+      <header class="panel-header">
+        <div class="panel-heading">
+          <h2>Vista de saldo</h2>
+          <p>Balance acumulado</p>
+        </div>
+      </header>
+      <div class="panel-body">
+        @if (saldo) {
+          <div class="saldo-grande mono" [class.positivo]="esPositivo(saldo.saldo)">
+            {{ formatoNumero(saldo.saldo) }}
+          </div>
+          <div class="saldo-detalle">
+            <div class="detalle-row">
+              <span>Ingresos totales</span>
+              <span class="mono positivo">{{ formatoNumero(saldo.ingresos) }}</span>
+            </div>
+            <div class="detalle-row">
+              <span>Gastos totales</span>
+              <span class="mono negativo">{{ formatoNumero(saldo.gastos) }}</span>
+            </div>
+            <div class="detalle-row total">
+              <span>Saldo disponible</span>
+              <span class="mono">{{ formatoNumero(saldo.saldo) }}</span>
+            </div>
+          </div>
+        } @else {
+          <p class="vacio">Cargando…</p>
+        }
+      </div>
+    </article>
+  </section>
 </div>

@@ -17,6 +17,7 @@ interface CategoriaRaw {
 interface MensualRaw {
   mes: string;
   total: string;
+  tipo: string;
 }
 
 @Injectable()
@@ -27,35 +28,40 @@ export class GastosService {
   ) {}
 
   create(dto: CreateGastoDto): Promise<Gasto> {
-    const gasto = this.gastosRepo.create(dto);
+    const gasto = this.gastosRepo.create({ ...dto, tipo: dto.tipo ?? 'gasto' });
     return this.gastosRepo.save(gasto);
   }
 
   async findAll(query: QueryGastosDto): Promise<Gasto[]> {
     const qb = this.gastosRepo.createQueryBuilder('g');
 
-    if (query.fecha_desde) {
-      qb.andWhere('g.fecha >= :fecha_desde', {
-        fecha_desde: query.fecha_desde,
-      });
-    }
-    if (query.fecha_hasta) {
-      qb.andWhere('g.fecha <= :fecha_hasta', {
-        fecha_hasta: query.fecha_hasta,
-      });
-    }
-    if (query.categoria) {
-      qb.andWhere('g.categoria = :categoria', {
-        categoria: query.categoria,
-      });
-    }
+    this.aplicarFiltros(qb, query);
 
     qb.orderBy('g.fecha', 'DESC');
     return qb.getMany();
   }
 
+  async getSaldo(): Promise<{ saldo: number; ingresos: number; gastos: number }> {
+    const qb = this.gastosRepo.createQueryBuilder('g');
+    const fila = await qb
+      .select(
+        "COALESCE(SUM(CASE WHEN g.tipo = 'ingreso' THEN g.monto ELSE 0 END), 0)",
+        'ingresos',
+      )
+      .addSelect(
+        "COALESCE(SUM(CASE WHEN g.tipo = 'gasto' THEN g.monto ELSE 0 END), 0)",
+        'gastos',
+      )
+      .getRawOne<{ ingresos: string; gastos: string }>();
+
+    const ingresos = Number(fila?.ingresos ?? 0);
+    const gastos = Number(fila?.gastos ?? 0);
+    return { saldo: ingresos - gastos, ingresos, gastos };
+  }
+
   async getResumen(query: QueryGastosDto) {
     const qb = this.gastosRepo.createQueryBuilder('g');
+    qb.where('g.tipo = :tipo', { tipo: 'gasto' });
 
     if (query.fecha_desde) {
       qb.andWhere('g.fecha >= :fecha_desde', {
@@ -93,13 +99,56 @@ export class GastosService {
       .createQueryBuilder('g')
       .select("TO_CHAR(g.fecha, 'YYYY-MM')", 'mes')
       .addSelect('SUM(g.monto)', 'total')
+      .addSelect('g.tipo', 'tipo')
       .groupBy("TO_CHAR(g.fecha, 'YYYY-MM')")
+      .addGroupBy('g.tipo')
       .orderBy("TO_CHAR(g.fecha, 'YYYY-MM')", 'ASC')
       .getRawMany<MensualRaw>();
 
-    return resultados.map((r) => ({
-      mes: r.mes,
-      total: Number(r.total),
+    const mapa = new Map<
+      string,
+      { mes: string; ingresos: number; gastos: number }
+    >();
+    for (const r of resultados) {
+      const actual = mapa.get(r.mes) ?? {
+        mes: r.mes,
+        ingresos: 0,
+        gastos: 0,
+      };
+      if (r.tipo === 'ingreso') actual.ingresos += Number(r.total);
+      else actual.gastos += Number(r.total);
+      mapa.set(r.mes, actual);
+    }
+
+    return Array.from(mapa.values()).map((m) => ({
+      mes: m.mes,
+      total: m.ingresos - m.gastos,
+      ingresos: m.ingresos,
+      gastos: m.gastos,
     }));
+  }
+
+  private aplicarFiltros(
+    qb: import('typeorm').SelectQueryBuilder<Gasto>,
+    query: QueryGastosDto,
+  ) {
+    if (query.fecha_desde) {
+      qb.andWhere('g.fecha >= :fecha_desde', {
+        fecha_desde: query.fecha_desde,
+      });
+    }
+    if (query.fecha_hasta) {
+      qb.andWhere('g.fecha <= :fecha_hasta', {
+        fecha_hasta: query.fecha_hasta,
+      });
+    }
+    if (query.categoria) {
+      qb.andWhere('g.categoria = :categoria', {
+        categoria: query.categoria,
+      });
+    }
+    if (query.tipo) {
+      qb.andWhere('g.tipo = :tipo', { tipo: query.tipo });
+    }
   }
 }

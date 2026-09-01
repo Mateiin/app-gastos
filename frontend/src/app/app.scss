@@ -1,35 +1,138 @@
-.app-header {
+.app-layout {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background: #2c3e50;
-  color: #fff;
+  min-height: 100vh;
+}
 
-  h1 {
-    margin: 0;
-    font-size: 1.25rem;
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 0.75rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.6rem 1.25rem;
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 8px;
+      background: var(--primary);
+      .logo-dot {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 50%;
+        background: var(--primary-foreground);
+      }
+    }
+
+    .brand-name {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #f8fafc;
+    }
   }
 
-  nav {
+  .sidebar-nav {
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+
+    .nav-section {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      padding: 0.5rem 0.6rem 0.25rem;
+    }
 
     a {
-      color: #ecf0f1;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.6rem;
+      border-radius: 8px;
+      color: var(--sidebar-foreground);
       text-decoration: none;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
+      font-size: 0.875rem;
+      transition: background 0.15s, color 0.15s;
+
+      .nav-icon {
+        width: 1.3rem;
+        text-align: center;
+      }
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: #f8fafc;
+      }
 
       &.active {
-        background: #34495e;
+        background: var(--sidebar-active);
+        color: #f8fafc;
+        box-shadow: inset 2px 0 0 var(--primary);
       }
     }
   }
 }
 
+.app-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  height: 4rem;
+  padding: 0 1.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(6px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  .topbar-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
 .app-main {
+  flex: 1;
   padding: 1.5rem;
-  max-width: 1000px;
-  margin: 0 auto;
+  max-width: 1440px;
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .sidebar {
+    width: 68px;
+    .brand-name,
+    .nav-section {
+      display: none;
+    }
+    .sidebar-nav a {
+      justify-content: center;
+      .nav-icon {
+        width: auto;
+      }
+    }
+  }
 }

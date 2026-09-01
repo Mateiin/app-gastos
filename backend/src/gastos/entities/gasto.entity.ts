@@ -25,6 +25,9 @@ export class Gasto {
   @Column('text')
   metodo_pago: string;
 
+  @Column('text', { default: 'gasto' })
+  tipo: 'gasto' | 'ingreso';
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }

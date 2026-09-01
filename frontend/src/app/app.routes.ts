@@ -16,4 +16,11 @@ export const routes: Routes = [
         (m) => m.GastosListComponent,
       ),
   },
+  {
+    path: 'ingresos',
+    loadComponent: () =>
+      import('./features/gastos/gastos-list.component').then(
+        (m) => m.GastosListComponent,
+      ),
+  },
 ];

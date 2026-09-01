@@ -1,4 +1,4 @@
-import { IsOptional, IsDateString, IsString } from 'class-validator';
+import { IsOptional, IsDateString, IsString, IsIn } from 'class-validator';
 
 export class QueryGastosDto {
   @IsOptional()
@@ -12,4 +12,8 @@ export class QueryGastosDto {
   @IsOptional()
   @IsString()
   categoria?: string;
+
+  @IsOptional()
+  @IsIn(['gasto', 'ingreso'])
+  tipo?: 'gasto' | 'ingreso';
 }

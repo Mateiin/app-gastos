@@ -1,3 +1,5 @@
+export type TipoMovimiento = 'gasto' | 'ingreso';
+
 export interface Gasto {
   id: string;
   descripcion: string;
@@ -5,7 +7,8 @@ export interface Gasto {
   monto: number;
   categoria: string;
   metodo_pago: string;
-  created_at: string;
+  tipo: TipoMovimiento;
+  created_at?: string;
 }
 
 export interface ResumenCategoria {
@@ -18,7 +21,15 @@ export interface Resumen {
   porCategoria: ResumenCategoria[];
 }
 
+export interface Saldo {
+  saldo: number;
+  ingresos: number;
+  gastos: number;
+}
+
 export interface ResumenMensual {
   mes: string;
   total: number;
+  ingresos: number;
+  gastos: number;
 }

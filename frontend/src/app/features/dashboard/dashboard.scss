@@ -2,73 +2,341 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+}
 
-  .balance .total {
-    font-size: 2rem;
-    margin: 0;
-    font-weight: 600;
-  }
+.positivo {
+  color: var(--positive);
+}
 
-  .categoria {
-    margin-bottom: 1rem;
+.negativo {
+  color: var(--negative);
+}
 
-    .categoria-label {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.25rem;
-      font-size: 0.9rem;
-    }
+.vacio {
+  color: var(--muted-foreground);
+  margin: 0;
+  padding: 0.5rem 0;
+}
 
-    .barra {
-      height: 12px;
-      background: #ecf0f1;
-      border-radius: 6px;
-      overflow: hidden;
+/* ---- KPI cards ---- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
 
-      .barra-fill {
-        height: 100%;
-        background: #3498db;
-        border-radius: 6px;
-      }
-    }
-  }
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 
-  .mensual {
+  .stat-top {
     display: flex;
-    align-items: flex-end;
-    gap: 0.5rem;
-    height: 180px;
+    align-items: center;
+    justify-content: space-between;
+  }
 
-    .mes {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      height: 100%;
+  .stat-label {
+    font-size: 0.82rem;
+    color: var(--muted-foreground);
+  }
 
-      .mes-barra {
-        flex: 1;
-        width: 100%;
-        display: flex;
-        align-items: flex-end;
+  .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+  }
 
-        .mes-fill {
-          width: 100%;
-          background: #2ecc71;
-          border-radius: 4px 4px 0 0;
-        }
-      }
+  .icon-saldo {
+    background: color-mix(in srgb, var(--primary) 18%, transparent);
+    color: var(--primary-strong);
+  }
+  .icon-ingreso {
+    background: color-mix(in srgb, var(--chart-2) 18%, transparent);
+    color: var(--chart-2);
+  }
+  .icon-gasto {
+    background: color-mix(in srgb, var(--destructive) 14%, transparent);
+    color: var(--destructive);
+  }
+  .icon-hoy {
+    background: color-mix(in srgb, var(--chart-3) 18%, transparent);
+    color: var(--chart-3);
+  }
 
-      .mes-label {
-        margin-top: 0.25rem;
-        font-size: 0.7rem;
-        color: #7f8c8d;
-      }
+  .stat-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-hint {
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+}
+
+/* ---- Grid + panels ---- */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+
+  &.lg-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+
+  .panel-header {
+    padding: 1.1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    p {
+      margin: 0.15rem 0 0;
+      font-size: 0.78rem;
+      color: var(--muted-foreground);
     }
   }
 
-  .vacio {
-    color: #7f8c8d;
-    margin: 0;
+  .panel-body {
+    padding: 1.25rem;
+
+    &.list-flush {
+      padding: 0;
+    }
+  }
+}
+
+/* ---- Monthly chart (pure CSS) ---- */
+.chart-mensual {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  height: 220px;
+
+  .col-mes {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+
+    .barras {
+      flex: 1;
+      width: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .bar-ingreso {
+      width: 40%;
+      background: var(--chart-1);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+
+    .bar-gasto {
+      width: 40%;
+      background: var(--destructive);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.3s ease;
+    }
+
+    .mes-label {
+      margin-top: 0.5rem;
+      font-size: 0.68rem;
+      color: var(--muted-foreground);
+      text-transform: capitalize;
+    }
+  }
+}
+
+.leyenda {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted-foreground);
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    display: inline-block;
+
+    &.dot-ingreso {
+      background: var(--chart-1);
+    }
+    &.dot-gasto {
+      background: var(--destructive);
+    }
+  }
+}
+
+/* ---- Category bars ---- */
+.cat-row {
+  margin-bottom: 1rem;
+
+  .cat-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+
+    .mono {
+      color: var(--muted-foreground);
+    }
+  }
+
+  .barra {
+    height: 10px;
+    background: var(--muted);
+    border-radius: 6px;
+    overflow: hidden;
+
+    .barra-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--chart-1), var(--chart-2));
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+/* ---- Movement list ---- */
+.mov-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .tipo-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 0.8rem;
+    background: color-mix(in srgb, var(--destructive) 14%, transparent);
+    color: var(--destructive);
+
+    &.ingreso {
+      background: color-mix(in srgb, var(--positive) 16%, transparent);
+      color: var(--positive);
+    }
+  }
+
+  .mov-info {
+    flex: 1;
+    min-width: 0;
+
+    .mov-desc {
+      margin: 0;
+      font-size: 0.88rem;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mov-sub {
+      margin: 0.1rem 0 0;
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+    }
+  }
+
+  .mov-monto {
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+}
+
+/* ---- Saldo detail ---- */
+.saldo-grande {
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.saldo-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .detalle-row {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+
+    &.total {
+      border-bottom: none;
+      padding-top: 0.25rem;
+      font-weight: 600;
+    }
+  }
+}
+
+@media (max-width: 1024px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid.lg-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
   }
 }

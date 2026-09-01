@@ -4,6 +4,8 @@ import {
   IsDateString,
   IsNumber,
   Min,
+  IsIn,
+  IsOptional,
 } from 'class-validator';
 
 export class CreateGastoDto {
@@ -25,4 +27,8 @@ export class CreateGastoDto {
   @IsString()
   @IsNotEmpty()
   metodo_pago: string;
+
+  @IsOptional()
+  @IsIn(['gasto', 'ingreso'])
+  tipo?: 'gasto' | 'ingreso';
 }

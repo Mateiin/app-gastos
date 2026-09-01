@@ -22,6 +22,11 @@ export class GastosController {
     return this.gastosService.getResumen(query);
   }
 
+  @Get('saldo')
+  getSaldo() {
+    return this.gastosService.getSaldo();
+  }
+
   @Get('resumen/mensual')
   getResumenMensual() {
     return this.gastosService.getResumenMensual();

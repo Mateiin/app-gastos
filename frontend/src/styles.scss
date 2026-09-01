@@ -1,11 +1,56 @@
-/* Global styles */
+:root {
+  --bg: #f6f7f9;
+  --foreground: #23272e;
+  --card: #ffffff;
+  --muted: #eff1f4;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+  --primary: #34d399;
+  --primary-strong: #10b981;
+  --primary-foreground: #064e3b;
+  --accent: #eef2f7;
+  --accent-foreground: #1f2937;
+  --destructive: #e5484d;
+  --positive: #10b981;
+  --negative: #e5484d;
+  --chart-1: #10b981;
+  --chart-2: #3b82f6;
+  --chart-3: #f59e0b;
+  --chart-4: #a855f7;
+  --chart-5: #64748b;
+  --radius: 0.625rem;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-active: #1e293b;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f4f6f8;
-  color: #2c3e50;
+  padding: 0;
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-mono,
+.mono {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+button {
+  font-family: inherit;
 }

@@ -1,30 +1,109 @@
-<h2>Listado de gastos</h2>
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h2>{{ esIngresos ? 'Ingresos' : 'Gastos' }}</h2>
+      <p>Gestioná tus {{ esIngresos ? 'ingresos' : 'gastos' }}</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirForm()">
+      {{ esIngresos ? '＋ Nuevo ingreso' : '＋ Nuevo gasto' }}
+    </button>
+  </header>
 
-@if (cargando) {
-  <p class="vacio">Cargando…</p>
-} @else if (gastos.length === 0) {
-  <p class="vacio">No hay gastos registrados.</p>
-} @else {
-  <table class="tabla">
-    <thead>
-      <tr>
-        <th>Fecha</th>
-        <th>Descripción</th>
-        <th>Categoría</th>
-        <th>Método de pago</th>
-        <th class="monto">Monto</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (gasto of gastos; track gasto.id) {
-        <tr>
-          <td>{{ formatoFecha(gasto.fecha) }}</td>
-          <td>{{ gasto.descripcion }}</td>
-          <td>{{ gasto.categoria }}</td>
-          <td>{{ gasto.metodo_pago }}</td>
-          <td class="monto">{{ formatoNumero(gasto.monto) }}</td>
-        </tr>
+  @if (mostrarForm) {
+    <div class="card form-card">
+      <div class="seg">
+        <button
+          class="seg-item"
+          [class.active]="form.tipo === 'gasto'"
+          (click)="form.tipo = 'gasto'"
+        >Gasto</button>
+        <button
+          class="seg-item"
+          [class.active]="form.tipo === 'ingreso'"
+          (click)="form.tipo = 'ingreso'"
+        >Ingreso</button>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span>Descripción</span>
+          <input type="text" [(ngModel)]="form.descripcion" placeholder="Ej: Supermercado" />
+        </label>
+
+        <label>
+          <span>Monto</span>
+          <input type="number" [(ngModel)]="form.monto" step="0.01" min="0.01" placeholder="0.00" />
+        </label>
+
+        <label>
+          <span>Categoría</span>
+          <select [(ngModel)]="form.categoria">
+            @for (c of categorias; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Método</span>
+          <select [(ngModel)]="form.metodo_pago">
+            @for (m of metodos; track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Fecha</span>
+          <input type="date" [(ngModel)]="form.fecha" />
+        </label>
+      </div>
+
+      @if (error) {
+        <p class="error-msg">{{ error }}</p>
       }
-    </tbody>
-  </table>
-}
+
+      <div class="form-actions">
+        <button class="btn" (click)="cancelarForm()">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+          {{ guardando ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    @if (cargando) {
+      <p class="vacio">Cargando…</p>
+    } @else if (gastos.length === 0) {
+      <p class="vacio">No hay {{ esIngresos ? 'ingresos' : 'gastos' }} registrados.</p>
+    } @else {
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Categoría</th>
+            <th>Método</th>
+            <th class="monto">Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (gasto of gastos; track gasto.id) {
+            <tr>
+              <td>{{ formatoFecha(gasto.fecha) }}</td>
+              <td>{{ gasto.descripcion }}</td>
+              <td>{{ gasto.categoria }}</td>
+              <td>{{ gasto.metodo_pago }}</td>
+              <td class="monto">
+                <span class="monto-val" [class.positivo]="gasto.tipo === 'ingreso'">
+                  {{ gasto.tipo === 'ingreso' ? '+' : '−' }}{{ formatoNumero(gasto.monto) }}
+                </span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>
