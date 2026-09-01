@@ -30,7 +30,7 @@ columna `tipo` (`'gasto' | 'ingreso'`) para ambos conceptos.
 ```
 app-gastos/
 ├── backend/                 # API NestJS
-│   ├── database/migrations/ # SQL ejecutado en Supabase (001, 002)
+│   ├── database/migrations/ # SQL ejecutado en Supabase (001, 002, 003)
 │   └── src/
 │       ├── gastos/
 │       │   ├── entities/    # Entity de TypeORM: Gasto (incluye tipo)
@@ -38,6 +38,12 @@ app-gastos/
 │       │   ├── gastos.controller.ts
 │       │   ├── gastos.service.ts
 │       │   └── gastos.module.ts
+│       ├── ahorros/
+│       │   ├── entities/    # Entity de TypeORM: Ahorro (billetera con TNA)
+│       │   ├── dto/         # DTOs de creación/actualización
+│       │   ├── ahorros.controller.ts
+│       │   ├── ahorros.service.ts  # interés compuesto diario (TNA/365)
+│       │   └── ahorros.module.ts
 │       ├── app.module.ts
 │       └── main.ts          # enableCors + listen(process.env.PORT ?? 3000)
 ├── frontend/                 # SPA Angular (tema oscuro)
@@ -73,6 +79,42 @@ app-gastos/
   los mismos valores para no romper la migración de datos históricos.
   El formulario del frontend usa `CATEGORIAS`/`METODOS` hardcodeados en
   `gastos-list.component.ts`.
+
+## Modelo de datos — tabla `ahorros`
+
+Billeteras virtuales / cuentas remuneradas que crecen solas con interés.
+
+| Campo                 | Tipo           | Notas                                  |
+|-----------------------|----------------|-----------------------------------------|
+| id                    | uuid (PK)      | generado por Postgres                   |
+| nombre                | text           | ej: "Naranja X"                         |
+| monto_inicial         | numeric(12,2)  | saldo al momento de crear               |
+| saldo                 | numeric(12,2)  | saldo actual (crece con interés)        |
+| tna                   | numeric(5,2)   | tasa nominal anual en % (ej 40.5)       |
+| fecha_ultimo_interes  | timestamptz    | se actualiza al capitalizar             |
+| created_at            | timestamptz    | default now()                           |
+
+- El interés se calcula siempre en el backend: compuesto diario
+  `saldo × (TNA/100/365)`, acumulado por día transcurrido desde
+  `fecha_ultimo_interes`. Se capitaliza (persiste) al consultar
+  `GET /ahorros` o `GET /ahorros/total`. Solo crece el saldo: NO genera
+  filas en la tabla `gastos`.
+- `fecha_ultimo_interes` se guarda en UTC y los días se cuentan por diferencia
+  de fechas UTC, así el interés no depende de la zona horaria del servidor.
+- El TNA NO se puede leer de Naranja X (no hay API pública): lo carga el
+  usuario y lo actualiza manualmente cuando cambia.
+
+## Endpoints backend — ahorros
+
+- `POST /ahorros` — crea un ahorro. Body: `nombre, monto_inicial, tna`.
+  `saldo` inicia igual a `monto_inicial`, `fecha_ultimo_interes` = ahora.
+- `GET /ahorros` — lista ahorros (capitaliza intereses primero). Cada item
+  incluye `interes_diario` (lo que genera hoy).
+- `GET /ahorros/total` — `{ total }` suma de todos los saldos (capitaliza
+  primero).
+- `PATCH /ahorros/:id` — actualiza `nombre`, `tna` y/o `saldo` (para
+  correcciones manuales). Ruta `PATCH` (no `PUT`).
+- `DELETE /ahorros/:id` — borra un ahorro.
 
 ## Endpoints backend
 
@@ -140,8 +182,11 @@ PORT=3000
 6. [x] Frontend deployado en Vercel, backend en Render
    (`https://app-gastos-un8v.onrender.com`), `baseUrl` ya apunta a Render.
 7. [~] Migrar el Shortcut de iOS para que apunte a la nueva API de Render.
-8. [ ] Correcciones pendientes de la sesión del 2026-09-01 (el usuario dijo
-   que hay "unas correcciones más" para mañana — retomarlas al inicio).
+8. [x] Ahorros: módulo backend + tabla `ahorros` (migración 003) + página
+   `/ahorros` en frontend (alta, editar TNA/saldo, borrar). Interés compuesto
+   diario TNA/365 que se acredita al consultar (solo crece el saldo, no genera
+   filas de movimientos). Dashboard: KPI "Ahorros" + "Patrimonio total"
+   (saldo + ahorros).
 
 ## Notas de deploy
 

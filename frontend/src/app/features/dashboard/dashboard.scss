@@ -73,6 +73,10 @@
     background: color-mix(in srgb, var(--chart-3) 18%, transparent);
     color: var(--chart-3);
   }
+  .icon-ahorro {
+    background: color-mix(in srgb, var(--chart-1) 18%, transparent);
+    color: var(--chart-1);
+  }
 
   .stat-value {
     font-size: 1.6rem;

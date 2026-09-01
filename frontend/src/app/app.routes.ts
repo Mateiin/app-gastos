@@ -23,4 +23,11 @@ export const routes: Routes = [
         (m) => m.GastosListComponent,
       ),
   },
+  {
+    path: 'ahorros',
+    loadComponent: () =>
+      import('./features/ahorros/ahorros-list.component').then(
+        (m) => m.AhorrosListComponent,
+      ),
+  },
 ];

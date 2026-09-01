@@ -1,0 +1,121 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h2>Ahorros</h2>
+      <p>Cuentas remuneradas que crecen solas con interés</p>
+    </div>
+    <button class="btn btn-primary" (click)="abrirNuevo()">＋ Nuevo ahorro</button>
+  </header>
+
+  @if (mostrarForm) {
+    <div class="card form-card">
+      <h3>{{ editandoId ? 'Editar ahorro' : 'Nuevo ahorro' }}</h3>
+      <p class="form-tip">
+        El saldo va a crecer solo: todos los días suma el interés
+        (TNA ÷ 365). Actualizá el TNA cuando cambie en tu billetera.
+      </p>
+
+      <div class="form-grid">
+        <label>
+          <span>Nombre</span>
+          <input
+            type="text"
+            [(ngModel)]="form.nombre"
+            placeholder="Ej: Naranja X"
+          />
+        </label>
+
+        @if (!editandoId) {
+          <label>
+            <span>Monto inicial</span>
+            <input
+              type="number"
+              [(ngModel)]="form.monto_inicial"
+              step="0.01"
+              min="0.01"
+              placeholder="0.00"
+            />
+          </label>
+        } @else {
+          <label>
+            <span>Saldo actual</span>
+            <input
+              type="number"
+              [(ngModel)]="form.saldo"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+            />
+          </label>
+        }
+
+        <label>
+          <span>TNA (%)</span>
+          <input
+            type="number"
+            [(ngModel)]="form.tna"
+            step="0.01"
+            min="0"
+            max="100"
+            placeholder="Ej: 40.5"
+          />
+        </label>
+      </div>
+
+      @if (error) {
+        <p class="error-msg">{{ error }}</p>
+      }
+
+      <div class="form-actions">
+        <button class="btn" (click)="cancelarForm()">Cancelar</button>
+        <button
+          class="btn btn-primary"
+          (click)="guardar()"
+          [disabled]="guardando"
+        >
+          {{ guardando ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    @if (cargando) {
+      <p class="vacio">Cargando…</p>
+    } @else if (ahorros.length === 0) {
+      <p class="vacio">
+        No hay ahorros registrados. Agregá tu billetera virtual y empezá a
+        sumar interés.
+      </p>
+    } @else {
+      <ul class="ahorro-list">
+        @for (a of ahorros; track a.id) {
+          <li class="ahorro-item">
+            <div class="ahorro-info">
+              <p class="ahorro-nombre">{{ a.nombre }}</p>
+              <p class="ahorro-sub">
+                Inversión inicial {{ formatoNumero(a.monto_inicial) }} ·
+                TNA {{ a.tna }}%
+              </p>
+            </div>
+
+            <div class="ahorro-valores">
+              <div class="ahorro-saldo mono">{{ formatoNumero(a.saldo) }}</div>
+              <div class="ahorro-interes">
+                <span class="interes-igual">≈</span>+{{
+                  formatoNumero(a.interes_diario)
+                }}
+                por día
+              </div>
+            </div>
+
+            <div class="ahorro-acciones">
+              <button class="btn" (click)="abrirEdicion(a)">Editar</button>
+              <button class="btn btn-danger" (click)="borrar(a)">Borrar</button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
 import { GastosService } from '../../core/services/gastos.service';
+import { AhorrosService } from '../../core/services/ahorros.service';
 import {
   Gasto,
   Resumen,
@@ -20,6 +21,7 @@ export class DashboardComponent implements OnInit {
   resumen: Resumen | null = null;
   mensual: ResumenMensual[] = [];
   movimientos: Gasto[] = [];
+  totalAhorros = 0;
 
   maxMensual = 1;
   maxCategoria = 1;
@@ -29,6 +31,7 @@ export class DashboardComponent implements OnInit {
 
   constructor(
     private readonly gastosService: GastosService,
+    private readonly ahorrosService: AhorrosService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -92,6 +95,19 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => console.error('Error cargando movimientos', err),
     });
+
+    this.ahorrosService.total().subscribe({
+      next: (res) => {
+        this.totalAhorros = res.total;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error cargando ahorros', err),
+    });
+  }
+
+  saldoTotal(): number {
+    const base = this.saldo?.saldo ?? 0;
+    return base + this.totalAhorros;
   }
 
   topCategorias(): ResumenCategoria[] {

@@ -39,6 +39,15 @@
       <div class="stat-value mono">{{ gastosHoy ? formatoNumero(gastosHoy) : '—' }}</div>
       <span class="stat-hint">Acumulado del día</span>
     </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <span class="stat-label">Ahorros</span>
+        <span class="stat-icon icon-ahorro">◈</span>
+      </div>
+      <div class="stat-value mono positivo">{{ totalAhorros ? formatoNumero(totalAhorros) : '—' }}</div>
+      <span class="stat-hint">Billeteras + interés</span>
+    </article>
   </section>
 
   <section class="grid lg-2">
@@ -140,21 +149,21 @@
       </header>
       <div class="panel-body">
         @if (saldo) {
-          <div class="saldo-grande mono" [class.positivo]="esPositivo(saldo.saldo)">
-            {{ formatoNumero(saldo.saldo) }}
+          <div class="saldo-grande mono" [class.positivo]="esPositivo(saldoTotal())">
+            {{ formatoNumero(saldoTotal()) }}
           </div>
           <div class="saldo-detalle">
             <div class="detalle-row">
-              <span>Ingresos totales</span>
-              <span class="mono positivo">{{ formatoNumero(saldo.ingresos) }}</span>
+              <span>Saldo (ingresos − gastos)</span>
+              <span class="mono">{{ formatoNumero(saldo.saldo) }}</span>
             </div>
             <div class="detalle-row">
-              <span>Gastos totales</span>
-              <span class="mono negativo">{{ formatoNumero(saldo.gastos) }}</span>
+              <span>Ahorros (billeteras + interés)</span>
+              <span class="mono positivo">{{ formatoNumero(totalAhorros) }}</span>
             </div>
             <div class="detalle-row total">
-              <span>Saldo disponible</span>
-              <span class="mono">{{ formatoNumero(saldo.saldo) }}</span>
+              <span>Patrimonio total</span>
+              <span class="mono">{{ formatoNumero(saldoTotal()) }}</span>
             </div>
           </div>
         } @else {
