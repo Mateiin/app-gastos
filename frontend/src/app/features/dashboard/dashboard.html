@@ -18,7 +18,7 @@
         <span class="stat-label">Ingresos del mes</span>
         <span class="stat-icon icon-ingreso">↑</span>
       </div>
-      <div class="stat-value mono positivo">{{ ingresosMes ? formatoNumero(ingresosMes) : (mensual.length ? formatoNumero(mensual[mensual.length-1].ingresos) : '—') }}</div>
+      <div class="stat-value mono positivo">{{ ingresosMes ? formatoNumero(ingresosMes) : '—' }}</div>
       <span class="stat-hint">Total recibido este mes</span>
     </article>
 
@@ -27,7 +27,7 @@
         <span class="stat-label">Gastos del mes</span>
         <span class="stat-icon icon-gasto">↓</span>
       </div>
-      <div class="stat-value mono negativo">{{ gastosMes ? formatoNumero(gastosMes) : (mensual.length ? formatoNumero(mensual[mensual.length-1].gastos) : '—') }}</div>
+      <div class="stat-value mono negativo">{{ gastosMes ? formatoNumero(gastosMes) : '—' }}</div>
       <span class="stat-hint">Total gastado este mes</span>
     </article>
 

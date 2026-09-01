@@ -1,12 +1,13 @@
 .card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 
   .card-title {
     margin: 0 0 1rem;
     font-size: 1.1rem;
-    color: #34495e;
+    color: var(--foreground);
   }
 }

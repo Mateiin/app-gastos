@@ -62,6 +62,9 @@ export class DashboardComponent implements OnInit {
     this.gastosService.resumenMensual().subscribe({
       next: (res) => {
         this.mensual = res;
+        const ultimo = res.length > 0 ? res[res.length - 1] : null;
+        this.ingresosMes = ultimo?.ingresos ?? 0;
+        this.gastosMes = ultimo?.gastos ?? 0;
         this.maxMensual =
           res.length > 0
             ? Math.max(
@@ -89,23 +92,6 @@ export class DashboardComponent implements OnInit {
       },
       error: (err) => console.error('Error cargando movimientos', err),
     });
-
-    const primerDiaMes = this.primerDiaMesISO();
-    this.gastosService.listar({ tipo: 'ingreso', fecha_desde: primerDiaMes }).subscribe({
-      next: (res) => {
-        this.ingresosMes = res.reduce((acc, g) => acc + g.monto, 0);
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Error cargando ingresos del mes', err),
-    });
-
-    this.gastosService.listar({ tipo: 'gasto', fecha_desde: primerDiaMes }).subscribe({
-      next: (res) => {
-        this.gastosMes = res.reduce((acc, g) => acc + g.monto, 0);
-        this.cdr.markForCheck();
-      },
-      error: (err) => console.error('Error cargando gastos del mes', err),
-    });
   }
 
   topCategorias(): ResumenCategoria[] {
@@ -113,11 +99,16 @@ export class DashboardComponent implements OnInit {
   }
 
   formatoNumero(valor: number): string {
-    return valor.toLocaleString('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 2,
-    });
+    return this.formatoMoneda(valor);
+  }
+
+  private formatoMoneda(valor: number): string {
+    const negativo = valor < 0;
+    const abs = Math.abs(valor);
+    const partes = abs.toFixed(2).split('.');
+    const enteros = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const result = `${enteros},${partes[1]}`;
+    return `${negativo ? '−' : ''}$${result}`;
   }
 
   porcentajeCategoria(total: number): number {
@@ -147,10 +138,5 @@ export class DashboardComponent implements OnInit {
 
   private fechaISO(fecha: Date): string {
     return fecha.toISOString().slice(0, 10);
-  }
-
-  private primerDiaMesISO(): string {
-    const ahora = new Date();
-    return `${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, '0')}-01`;
   }
 }
