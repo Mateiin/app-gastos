@@ -28,7 +28,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   mensual: ResumenMensual[] = [];
   movimientos: Gasto[] = [];
   ahorros: Ahorro[] = [];
-  totalAhorros = 0;
 
   now = Date.now();
   private timer: ReturnType<typeof setInterval> | null = null;
@@ -117,25 +116,26 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.ahorrosService.listar().subscribe({
       next: (res) => {
         this.ahorros = res;
-        this.totalAhorros = res.reduce((acc, a) => acc + (Number(a.saldo) || 0), 0);
         this.cdr.markForCheck();
       },
-      error: (err) => console.error('Error cargando ahorros', err),
+      error: (err) => console.error('Error cargando cuentas', err),
     });
   }
 
   saldoTotal(): number {
-    const base = this.saldo?.saldo ?? 0;
-    return base + this.totalAhorros;
+    return this.saldo?.saldo ?? 0;
   }
 
   restanteTna(): number {
-    if (this.ahorros.length === 0) return 0;
-    return Math.min(
-      ...this.ahorros.map((a) =>
-        a.tna_actualizado ? proximaMetaTna(a.tna_actualizado) : 0,
-      ),
+    const conTna = this.ahorros.filter(
+      (a) => a.tna > 0 && a.tna_actualizado,
     );
+    if (conTna.length === 0) return 0;
+    return Math.min(...conTna.map((a) => proximaMetaTna(a.tna_actualizado!)));
+  }
+
+  hayTna(): boolean {
+    return this.ahorros.some((a) => a.tna > 0);
   }
 
   cuentaTna(): string {

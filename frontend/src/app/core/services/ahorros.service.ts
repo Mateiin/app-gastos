@@ -8,12 +8,14 @@ export interface CrearAhorro {
   nombre: string;
   monto_inicial: number;
   tna: number;
+  rol?: 'virtual' | 'efectivo' | 'otro';
 }
 
 export interface ActualizarAhorro {
   nombre?: string;
   tna?: number;
   saldo?: number;
+  rol?: 'virtual' | 'efectivo' | 'otro';
 }
 
 @Injectable({ providedIn: 'root' })

@@ -1,18 +1,22 @@
 <div class="page">
   <header class="page-header">
     <div>
-      <h2>Ahorros</h2>
-      <p>Cuentas remuneradas que crecen solas con interés</p>
+      <h2>Cuentas</h2>
+      <p>
+        Todo tu dinero: billeteras virtuales y efectivo. Las virtuales crecen
+        con interés (TNA).
+      </p>
     </div>
-    <button class="btn btn-primary" (click)="abrirNuevo()">＋ Nuevo ahorro</button>
+    <button class="btn btn-primary" (click)="abrirNuevo()">＋ Nueva cuenta</button>
   </header>
 
   @if (mostrarForm) {
     <div class="card form-card">
-      <h3>{{ editandoId ? 'Editar ahorro' : 'Nuevo ahorro' }}</h3>
+      <h3>{{ editandoId ? 'Editar cuenta' : 'Nueva cuenta' }}</h3>
       <p class="form-tip">
-        El saldo va a crecer solo: todos los días suma el interés
-        (TNA ÷ 365). Actualizá el TNA cuando cambie en tu billetera.
+        Registrá tu dinero real acá. Si la cuenta tiene TNA, el saldo va a crecer
+        solo: todos los días suma el interés (TNA ÷ 365). Creá una cuenta
+        "Efectivo" (TNA 0) para tu plata en mano.
       </p>
 
       <div class="form-grid">
@@ -32,7 +36,7 @@
               type="number"
               [(ngModel)]="form.monto_inicial"
               step="0.01"
-              min="0.01"
+              min="0"
               placeholder="0.00"
             />
           </label>
@@ -60,6 +64,15 @@
             placeholder="Ej: 40.5"
           />
         </label>
+
+        <label>
+          <span>Tipo de cuenta</span>
+          <select [(ngModel)]="form.rol" (change)="onRolChange()">
+            <option value="virtual">Virtual (Débito / Transferencia / Crédito)</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="otro">Otra</option>
+          </select>
+        </label>
       </div>
 
       @if (error) {
@@ -84,8 +97,8 @@
       <p class="vacio">Cargando…</p>
     } @else if (ahorros.length === 0) {
       <p class="vacio">
-        No hay ahorros registrados. Agregá tu billetera virtual y empezá a
-        sumar interés.
+        No hay cuentas registradas. Agregá tu billetera virtual y una cuenta de
+        efectivo para tener todo tu dinero junto.
       </p>
     } @else {
       <ul class="ahorro-list">
@@ -94,12 +107,14 @@
             <div class="ahorro-info">
               <p class="ahorro-nombre">
                 {{ a.nombre }}
-                @if (restanteTna(a) > 0) {
-                  <span class="countdown-chip" [class.vence]="restanteTna(a) < 86_400_000">
-                    TNA en {{ cuentaTna(a) }}
-                  </span>
-                } @else {
-                  <span class="countdown-chip vencido">TNA vencido</span>
+                @if (a.tna > 0) {
+                  @if (restanteTna(a) > 0) {
+                    <span class="countdown-chip" [class.vence]="restanteTna(a) < 86_400_000">
+                      TNA en {{ cuentaTna(a) }}
+                    </span>
+                  } @else {
+                    <span class="countdown-chip vencido">TNA vencido</span>
+                  }
                 }
               </p>
               <p class="ahorro-sub">

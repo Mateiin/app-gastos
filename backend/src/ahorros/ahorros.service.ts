@@ -25,6 +25,7 @@ export class AhorrosService {
       monto_inicial: dto.monto_inicial,
       saldo: dto.monto_inicial,
       tna: dto.tna,
+      rol: dto.rol ?? 'virtual',
       fecha_ultimo_interes: ahora,
       tna_actualizado: ahora,
     });
@@ -80,6 +81,7 @@ export class AhorrosService {
       ahorro.tna_actualizado = new Date();
     }
     if (dto.saldo !== undefined) ahorro.saldo = dto.saldo;
+    if (dto.rol !== undefined) ahorro.rol = dto.rol;
 
     return this.ahorrosRepo.save(ahorro);
   }
@@ -90,6 +92,39 @@ export class AhorrosService {
     });
     await this.ahorrosRepo.remove(ahorro);
     return { id };
+  }
+
+  /**
+   * Aplica un movimiento (gasto/ingreso) al saldo de la cuenta según el
+   * método de pago. Primero capitaliza el interés hasta ahora para no perderlo,
+   * luego ajusta el saldo y reinicia la capitalización.
+   * Si no existe una cuenta con el rol adecuado, no ajusta nada (solo registro).
+   */
+  async aplicarMovimiento(
+    metodo: string,
+    monto: number,
+    tipo: 'gasto' | 'ingreso',
+  ): Promise<void> {
+    const rol = this.rolPorMetodo(metodo);
+    if (!rol) return;
+
+    const cuenta = await this.ahorrosRepo.findOne({ where: { rol } });
+    if (!cuenta) return;
+
+    this.acreditarIntereses(cuenta);
+    const signo = tipo === 'ingreso' ? 1 : -1;
+    cuenta.saldo = this.redondear(cuenta.saldo + signo * monto);
+    cuenta.fecha_ultimo_interes = new Date();
+    await this.ahorrosRepo.save(cuenta);
+  }
+
+  private rolPorMetodo(metodo: string): 'efectivo' | 'virtual' | null {
+    const normalizado = metodo.trim().toLowerCase();
+    if (normalizado === 'efectivo') return 'efectivo';
+    if (normalizado === 'débito' || normalizado === 'debito') return 'virtual';
+    if (normalizado === 'transferencia') return 'virtual';
+    if (normalizado === 'crédito' || normalizado === 'credito') return 'virtual';
+    return null;
   }
 
   /* ---- Interés compuesto diario ---- */

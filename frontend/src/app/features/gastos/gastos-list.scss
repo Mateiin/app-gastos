@@ -109,6 +109,25 @@
     font-size: 0.85rem;
   }
 
+  .form-tip {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--muted-foreground);
+
+    strong {
+      color: var(--foreground);
+      font-weight: 600;
+    }
+
+    a {
+      color: var(--primary);
+    }
+
+    &.aviso {
+      color: var(--chart-3);
+    }
+  }
+
   .form-actions {
     display: flex;
     justify-content: flex-end;

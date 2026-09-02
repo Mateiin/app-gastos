@@ -5,6 +5,7 @@ import {
   IsNumber,
   Min,
   Max,
+  IsIn,
 } from 'class-validator';
 
 export class UpdateAhorroDto {
@@ -23,4 +24,8 @@ export class UpdateAhorroDto {
   @IsNumber()
   @Min(0)
   saldo?: number;
+
+  @IsOptional()
+  @IsIn(['virtual', 'efectivo', 'otro'])
+  rol?: 'virtual' | 'efectivo' | 'otro';
 }

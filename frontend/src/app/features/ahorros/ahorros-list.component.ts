@@ -31,6 +31,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
     monto_inicial: null as number | null,
     saldo: null as number | null,
     tna: null as number | null,
+    rol: 'virtual' as 'virtual' | 'efectivo' | 'otro',
   };
   editandoId: string | null = null;
   guardando = false;
@@ -64,7 +65,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error cargando ahorros', err);
+        console.error('Error cargando cuentas', err);
         this.cargando = false;
         this.cdr.markForCheck();
       },
@@ -85,6 +86,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
       monto_inicial: a.monto_inicial,
       saldo: a.saldo,
       tna: a.tna,
+      rol: a.rol ?? 'virtual',
     };
     this.mostrarForm = true;
     this.error = '';
@@ -96,8 +98,13 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
     this.error = '';
   }
 
+  onRolChange(): void {
+    if (this.form.rol === 'efectivo') this.form.tna = 0;
+  }
+
   guardar(): void {
-    if (!this.form.nombre.trim() || !this.form.tna) return;
+    if (!this.form.nombre.trim() || this.form.tna === null) return;
+    const tna = this.form.rol === 'efectivo' ? 0 : this.form.tna;
 
     this.guardando = true;
     this.error = '';
@@ -108,7 +115,8 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
         .actualizar(this.editandoId, {
           nombre: this.form.nombre.trim(),
           saldo: this.form.saldo ?? undefined,
-          tna: this.form.tna,
+          tna,
+          rol: this.form.rol,
         })
         .subscribe({
           next: () => {
@@ -118,7 +126,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
             this.cdr.markForCheck();
           },
           error: (err) => {
-            console.error('Error actualizando ahorro', err);
+            console.error('Error actualizando cuenta', err);
             this.guardando = false;
             this.error = 'No se pudo actualizar. Intentalo de nuevo.';
             this.cdr.markForCheck();
@@ -129,7 +137,8 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
         .crear({
           nombre: this.form.nombre.trim(),
           monto_inicial: this.form.monto_inicial ?? 0,
-          tna: this.form.tna,
+          tna,
+          rol: this.form.rol,
         })
         .subscribe({
           next: () => {
@@ -139,7 +148,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
             this.cdr.markForCheck();
           },
           error: (err) => {
-            console.error('Error creando ahorro', err);
+            console.error('Error creando cuenta', err);
             this.guardando = false;
             this.error = 'No se pudo guardar. Intentalo de nuevo.';
             this.cdr.markForCheck();
@@ -149,14 +158,14 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
   }
 
   borrar(a: Ahorro): void {
-    if (!confirm(`¿Borrar el ahorro "${a.nombre}"?`)) return;
+    if (!confirm(`¿Borrar la cuenta "${a.nombre}"?`)) return;
     this.ahorrosService.eliminar(a.id).subscribe({
       next: () => {
         this.cargar();
         this.cdr.markForCheck();
       },
       error: (err) => {
-        console.error('Error borrando ahorro', err);
+        console.error('Error borrando cuenta', err);
         alert('No se pudo borrar. Intentalo de nuevo.');
       },
     });
@@ -191,6 +200,7 @@ export class AhorrosListComponent implements OnInit, OnDestroy {
       monto_inicial: null,
       saldo: null,
       tna: null,
+      rol: 'virtual',
     };
   }
 }

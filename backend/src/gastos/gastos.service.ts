@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Gasto } from './entities/gasto.entity';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { QueryGastosDto } from './dto/query-gastos.dto';
+import { AhorrosService } from '../ahorros/ahorros.service';
 
 interface ResumenRaw {
   total?: string;
@@ -25,11 +26,18 @@ export class GastosService {
   constructor(
     @InjectRepository(Gasto)
     private readonly gastosRepo: Repository<Gasto>,
+    private readonly ahorrosService: AhorrosService,
   ) {}
 
-  create(dto: CreateGastoDto): Promise<Gasto> {
+  async create(dto: CreateGastoDto): Promise<Gasto> {
     const gasto = this.gastosRepo.create({ ...dto, tipo: dto.tipo ?? 'gasto' });
-    return this.gastosRepo.save(gasto);
+    const guardado = await this.gastosRepo.save(gasto);
+    await this.ahorrosService.aplicarMovimiento(
+      dto.metodo_pago,
+      dto.monto,
+      guardado.tipo,
+    );
+    return guardado;
   }
 
   async findAll(query: QueryGastosDto): Promise<Gasto[]> {
@@ -56,7 +64,8 @@ export class GastosService {
 
     const ingresos = Number(fila?.ingresos ?? 0);
     const gastos = Number(fila?.gastos ?? 0);
-    return { saldo: ingresos - gastos, ingresos, gastos };
+    const { total } = await this.ahorrosService.getTotal();
+    return { saldo: total, ingresos, gastos };
   }
 
   async getResumen(query: QueryGastosDto) {

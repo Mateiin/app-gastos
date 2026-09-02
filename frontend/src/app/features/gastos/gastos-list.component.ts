@@ -1,12 +1,14 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { GastosService } from '../../core/services/gastos.service';
 import {
   Gasto,
   TipoMovimiento,
 } from '../../core/models/gasto.model';
+import { AhorrosService } from '../../core/services/ahorros.service';
+import { Ahorro } from '../../core/models/ahorro.model';
 
 const CATEGORIAS_GASTO = [
   'Comida',
@@ -34,12 +36,13 @@ const METODOS = [
 
 @Component({
   selector: 'app-gastos-list',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './gastos-list.html',
   styleUrl: './gastos-list.scss',
 })
 export class GastosListComponent implements OnInit {
   gastos: Gasto[] = [];
+  cuentas: Ahorro[] = [];
   cargando = true;
 
   tipo: TipoMovimiento = 'gasto';
@@ -62,11 +65,13 @@ export class GastosListComponent implements OnInit {
 
   constructor(
     private readonly gastosService: GastosService,
+    private readonly ahorrosService: AhorrosService,
     private readonly cdr: ChangeDetectorRef,
     private readonly route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
+    this.cargarCuentas();
     this.route.url.subscribe({
       next: (seg) => {
         this.esIngresos = seg[0]?.path === 'ingresos';
@@ -74,6 +79,16 @@ export class GastosListComponent implements OnInit {
         this.cargar();
         this.cdr.markForCheck();
       },
+    });
+  }
+
+  cargarCuentas(): void {
+    this.ahorrosService.listar().subscribe({
+      next: (res) => {
+        this.cuentas = res;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error cargando cuentas', err),
     });
   }
 
@@ -103,6 +118,21 @@ export class GastosListComponent implements OnInit {
   cancelarForm(): void {
     this.mostrarForm = false;
     this.error = '';
+  }
+
+  rolParaMetodo(metodo: string): 'efectivo' | 'virtual' | null {
+    const m = metodo.trim().toLowerCase();
+    if (m === 'efectivo') return 'efectivo';
+    if (m === 'débito' || m === 'debito') return 'virtual';
+    if (m === 'transferencia') return 'virtual';
+    if (m === 'crédito' || m === 'credito') return 'virtual';
+    return null;
+  }
+
+  cuentaVinculada(): Ahorro | null {
+    const rol = this.rolParaMetodo(this.form.metodo_pago);
+    if (!rol) return null;
+    return this.cuentas.find((c) => c.rol === rol) ?? null;
   }
 
   guardar(): void {

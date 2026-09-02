@@ -45,6 +45,9 @@ export class Ahorro {
   @Column('timestamptz', { nullable: true })
   tna_actualizado: Date | null;
 
+  @Column('text', { nullable: true })
+  rol: 'virtual' | 'efectivo' | 'otro' | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }

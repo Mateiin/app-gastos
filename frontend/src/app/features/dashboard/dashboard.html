@@ -9,7 +9,7 @@
         {{ saldo ? formatoNumero(saldo.saldo) : '—' }}
       </div>
       <span class="stat-hint">
-        {{ saldo ? 'Ingresos − Gastos acumulados' : 'Cargando…' }}
+        {{ saldo ? 'Todo tu dinero en cuentas' : 'Cargando…' }}
       </span>
     </article>
 
@@ -39,18 +39,9 @@
       <div class="stat-value mono">{{ gastosHoy ? formatoNumero(gastosHoy) : '—' }}</div>
       <span class="stat-hint">Acumulado del día</span>
     </article>
-
-    <article class="stat-card">
-      <div class="stat-top">
-        <span class="stat-label">Ahorros</span>
-        <span class="stat-icon icon-ahorro">◈</span>
-      </div>
-      <div class="stat-value mono positivo">{{ totalAhorros ? formatoNumero(totalAhorros) : '—' }}</div>
-      <span class="stat-hint">Billeteras + interés</span>
-    </article>
   </section>
 
-  @if (ahorros.length > 0) {
+  @if (hayTna()) {
     <div class="tna-timer" [class.vencido]="restanteTna() === 0">
       <div class="tna-timer-head">
         <span class="aviso-icon" aria-hidden="true">◈</span>
@@ -171,18 +162,18 @@
             {{ formatoNumero(saldoTotal()) }}
           </div>
           <div class="saldo-detalle">
-            <div class="detalle-row">
-              <span>Saldo (ingresos − gastos)</span>
-              <span class="mono">{{ formatoNumero(saldo.saldo) }}</span>
-            </div>
-            <div class="detalle-row">
-              <span>Ahorros (billeteras + interés)</span>
-              <span class="mono positivo">{{ formatoNumero(totalAhorros) }}</span>
-            </div>
-            <div class="detalle-row total">
-              <span>Patrimonio total</span>
-              <span class="mono">{{ formatoNumero(saldoTotal()) }}</span>
-            </div>
+            @for (a of ahorros; track a.id) {
+              <div class="detalle-row">
+                <span>{{ a.nombre }}</span>
+                <span class="mono positivo">{{ formatoNumero(a.saldo) }}</span>
+              </div>
+            }
+            @if (ahorros.length > 0) {
+              <div class="detalle-row total">
+                <span>Total en cuentas</span>
+                <span class="mono">{{ formatoNumero(saldoTotal()) }}</span>
+              </div>
+            }
           </div>
         } @else {
           <p class="vacio">Cargando…</p>

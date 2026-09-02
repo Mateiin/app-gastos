@@ -6,6 +6,7 @@ export interface Ahorro {
   tna: number;
   fecha_ultimo_interes: string;
   tna_actualizado?: string | null;
+  rol?: 'virtual' | 'efectivo' | 'otro' | null;
   interes_diario: number;
   created_at?: string;
 }

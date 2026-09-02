@@ -8,5 +8,6 @@ import { AhorrosController } from './ahorros.controller';
   imports: [TypeOrmModule.forFeature([Ahorro])],
   controllers: [AhorrosController],
   providers: [AhorrosService],
+  exports: [AhorrosService],
 })
 export class AhorrosModule {}

@@ -46,6 +46,27 @@
         </label>
       </div>
 
+      @if (cuentaVinculada()) {
+        <p class="form-tip">
+          {{
+            esIngresos
+              ? 'Se acredita en'
+              : 'Se descuenta de'
+          }}
+          <strong>{{ cuentaVinculada()!.nombre }}</strong>.
+        </p>
+      } @else {
+        <p class="form-tip aviso">
+          No hay ninguna cuenta registrada para
+          <strong>{{
+            rolParaMetodo(form.metodo_pago) === 'efectivo'
+              ? 'Efectivo'
+              : 'método ' + form.metodo_pago
+          }}</strong
+          >. Creala en <a routerLink="/ahorros">Cuentas</a>.
+        </p>
+      }
+
       @if (error) {
         <p class="error-msg">{{ error }}</p>
       }
