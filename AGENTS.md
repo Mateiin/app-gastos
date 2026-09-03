@@ -136,6 +136,9 @@ Billeteras virtuales / cuentas remuneradas que crecen solas con interés.
   `includes()` sobre el string en minúsculas (`.trim().toLowerCase().includes('transferencia')`),
   NUNCA igualar el string exacto. Ver `rolPorMetodo` en
   `backend/src/ahorros/ahorros.service.ts` y `rolParaMetodo` en el frontend.
+- `DELETE /gastos/:id` — borra un movimiento y **revierte la cuenta**: si era
+  un gasto suma el monto de vuelta (porque al crear se descontó), si era un
+  ingreso lo resta. La reversa usa el mapeo método→rol igual que el alta.
 - `GET /gastos` — lista movimientos (filtros opcionales: `fecha_desde`,
   `fecha_hasta`, `categoria`, `tipo`). Ordenado por fecha desc.
 - `GET /gastos/resumen` — `{ total, porCategoria: [{categoria, total}] }`.
