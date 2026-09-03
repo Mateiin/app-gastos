@@ -122,10 +122,10 @@ export class GastosListComponent implements OnInit {
 
   rolParaMetodo(metodo: string): 'efectivo' | 'virtual' | null {
     const m = metodo.trim().toLowerCase();
-    if (m === 'efectivo') return 'efectivo';
-    if (m === 'débito' || m === 'debito') return 'virtual';
-    if (m === 'transferencia') return 'virtual';
-    if (m === 'crédito' || m === 'credito') return 'virtual';
+    if (m.includes('efectivo')) return 'efectivo';
+    if (m.includes('debito') || m.includes('débito')) return 'virtual';
+    if (m.includes('transferencia')) return 'virtual';
+    if (m.includes('credito') || m.includes('crédito')) return 'virtual';
     return null;
   }
 

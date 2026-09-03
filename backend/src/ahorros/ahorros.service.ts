@@ -120,10 +120,12 @@ export class AhorrosService {
 
   private rolPorMetodo(metodo: string): 'efectivo' | 'virtual' | null {
     const normalizado = metodo.trim().toLowerCase();
-    if (normalizado === 'efectivo') return 'efectivo';
-    if (normalizado === 'débito' || normalizado === 'debito') return 'virtual';
-    if (normalizado === 'transferencia') return 'virtual';
-    if (normalizado === 'crédito' || normalizado === 'credito') return 'virtual';
+    // El Shortcut de iOS manda métodos con emoji (ej. "🏦 Transferencia",
+    // "💳 Debito"), así que buscamos la palabra clave en lugar de igualar exacto.
+    if (normalizado.includes('efectivo')) return 'efectivo';
+    if (normalizado.includes('debito') || normalizado.includes('débito')) return 'virtual';
+    if (normalizado.includes('transferencia')) return 'virtual';
+    if (normalizado.includes('credito') || normalizado.includes('crédito')) return 'virtual';
     return null;
   }
 
