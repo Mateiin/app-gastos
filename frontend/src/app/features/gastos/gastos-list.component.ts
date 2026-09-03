@@ -175,6 +175,20 @@ export class GastosListComponent implements OnInit {
     return `$${intPart},${parts[1]}`;
   }
 
+  borrar(gasto: Gasto): void {
+    if (!confirm(`¿Borrar "${gasto.descripcion}"? Se revertirá en la cuenta.`)) return;
+    this.gastosService.borrar(gasto.id).subscribe({
+      next: () => {
+        this.cargar();
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        console.error('Error borrando movimiento', err);
+        alert('No se pudo borrar. Intentalo de nuevo.');
+      },
+    });
+  }
+
   formatoFecha(fecha: string): string {
     return new Date(fecha + 'T00:00:00').toLocaleDateString('es-AR');
   }

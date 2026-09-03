@@ -94,6 +94,7 @@
             <th>Categoría</th>
             <th>Método</th>
             <th class="monto">Monto</th>
+            <th class="acciones"></th>
           </tr>
         </thead>
         <tbody>
@@ -107,6 +108,13 @@
                 <span class="monto-val" [class.positivo]="gasto.tipo === 'ingreso'">
                   {{ gasto.tipo === 'ingreso' ? '+' : '−' }}{{ formatoNumero(gasto.monto) }}
                 </span>
+              </td>
+              <td data-label="Acciones" class="acciones">
+                <button
+                  class="btn-borrar"
+                  title="Borrar movimiento"
+                  (click)="borrar(gasto)"
+                >🗑</button>
               </td>
             </tr>
           }

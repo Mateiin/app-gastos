@@ -45,6 +45,10 @@ export class GastosService {
     return this.http.post<Gasto>(this.baseUrl, gasto);
   }
 
+  borrar(id: string): Observable<{ id: string }> {
+    return this.http.delete<{ id: string }>(`${this.baseUrl}/${id}`);
+  }
+
   resumen(): Observable<Resumen> {
     return this.http.get<Resumen>(`${this.baseUrl}/resumen`);
   }

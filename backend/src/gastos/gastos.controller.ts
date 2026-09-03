@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Delete, Param } from '@nestjs/common';
 import { GastosService } from './gastos.service';
 import { CreateGastoDto } from './dto/create-gasto.dto';
 import { QueryGastosDto } from './dto/query-gastos.dto';
@@ -15,6 +15,11 @@ export class GastosController {
   @Get()
   findAll(@Query() query: QueryGastosDto) {
     return this.gastosService.findAll(query);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.gastosService.remove(id);
   }
 
   @Get('resumen')

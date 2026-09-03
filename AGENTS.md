@@ -129,6 +129,13 @@ Billeteras virtuales / cuentas remuneradas que crecen solas con interés.
 - `POST /gastos` — crea un movimiento. Body: `descripcion, fecha, monto,
   categoria, metodo_pago, tipo?`. `tipo` es opcional (default `'gasto'`), así
   el Shortcut de iOS sigue funcionando sin cambios. Usado por el Shortcut.
+- **IMPORTANTE**: el Shortcut de iOS manda los métodos de pago **con emoji**
+  (ej. `"🏦 Transferencia "`, `"💳 Debito"`, `"Efectivo"`), mientras el
+  formulario del frontend usa strings limpios (`Efectivo`, `Débito`, ...).
+  Cualquier mapeo de método → cuenta debe buscar la palabra clave con
+  `includes()` sobre el string en minúsculas (`.trim().toLowerCase().includes('transferencia')`),
+  NUNCA igualar el string exacto. Ver `rolPorMetodo` en
+  `backend/src/ahorros/ahorros.service.ts` y `rolParaMetodo` en el frontend.
 - `GET /gastos` — lista movimientos (filtros opcionales: `fecha_desde`,
   `fecha_hasta`, `categoria`, `tipo`). Ordenado por fecha desc.
 - `GET /gastos/resumen` — `{ total, porCategoria: [{categoria, total}] }`.

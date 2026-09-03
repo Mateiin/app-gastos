@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Gasto } from './entities/gasto.entity';
@@ -38,6 +38,19 @@ export class GastosService {
       guardado.tipo,
     );
     return guardado;
+  }
+
+  async remove(id: string): Promise<{ id: string }> {
+    const gasto = await this.gastosRepo.findOneByOrFail({ id }).catch(() => {
+      throw new NotFoundException('Movimiento no encontrado');
+    });
+    await this.ahorrosService.revertirMovimiento(
+      gasto.metodo_pago,
+      gasto.monto,
+      gasto.tipo,
+    );
+    await this.gastosRepo.remove(gasto);
+    return { id };
   }
 
   async findAll(query: QueryGastosDto): Promise<Gasto[]> {

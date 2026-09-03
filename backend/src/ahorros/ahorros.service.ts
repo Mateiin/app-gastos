@@ -105,6 +105,32 @@ export class AhorrosService {
     monto: number,
     tipo: 'gasto' | 'ingreso',
   ): Promise<void> {
+    await this.moverSaldo(metodo, monto, tipo);
+  }
+
+  /**
+   * Revierte un movimiento al borrar un gasto/ingreso: deshace el ajuste que
+   * aplicó aplicarMovimiento. No hace nada si no hay cuenta vinculada.
+   */
+  async revertirMovimiento(
+    metodo: string,
+    monto: number,
+    tipo: 'gasto' | 'ingreso',
+  ): Promise<void> {
+    if (tipo === 'ingreso') {
+      // Al crearlo se sumó el monto; revertir lo descuenta.
+      await this.moverSaldo(metodo, monto, 'gasto');
+    } else {
+      // Al crearlo se descontó; revertir lo suma.
+      await this.moverSaldo(metodo, monto, 'ingreso');
+    }
+  }
+
+  private async moverSaldo(
+    metodo: string,
+    monto: number,
+    tipo: 'gasto' | 'ingreso',
+  ): Promise<void> {
     const rol = this.rolPorMetodo(metodo);
     if (!rol) return;
 
